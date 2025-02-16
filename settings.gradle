@@ -1,0 +1,3 @@
+rootProject.name = 'AdvancedDataStructs'
+include 'benchmark-core'
+
