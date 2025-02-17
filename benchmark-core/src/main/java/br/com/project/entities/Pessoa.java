@@ -1,10 +1,14 @@
+package br.com.project.entities;
+
+import java.util.Objects;
+
 public class Pessoa{
     private String nome;
-    private String idade;
+    private int idade;
     private String cpf;
     private String telefone;
 
-    public class pessoa(String nome ,int idade , String cpf , String telefone){
+    public Pessoa(String nome, int idade , String cpf , String telefone){
         this.idade = idade;
         this.nome = nome;
         this.cpf = cpf;
@@ -44,7 +48,7 @@ public class Pessoa{
 
     @Override
     public String toString(){
-        return "Nome : " + this.nome + "\nIdade : " + this.idade + "\nCPF : " + this.cpf;
+        return "Nome : " + this.nome + "\nIdade : " + this.idade + "\nCPF : " + this.cpf + "\nTelefone : " + this.telefone;
     }
 
     @Override
@@ -52,12 +56,11 @@ public class Pessoa{
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         Pessoa pessoa = (Pessoa) obj;
-        return this.cpf.equals(outraPessoa.cpf);
+        return this.cpf.equals(pessoa.cpf);
     }
 
     @Override
-    public int hashCode(){
-        return Objects.hash(cpf);
+    public int hashCode() {
+        return Objects.hashCode(cpf);
     }
-
 }
