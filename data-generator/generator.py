@@ -27,7 +27,7 @@ def gera_dados():
         "cpf": fake.cpf(),
         "idade": idade,
         "telefone": fake.cellphone_number(),
-        "dataDeNascimento": data_nascimento.strftime("%d/%m/%Y")
+        "dataNascimento": data_nascimento.strftime("%d/%m/%Y")
     }
     return pessoa
 
