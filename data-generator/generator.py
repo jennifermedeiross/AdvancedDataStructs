@@ -1,23 +1,51 @@
 import json
-import random
+from datetime import date
 from faker import Faker
+
 fake = Faker("pt_BR")
 
-#Função que gera os dados de cada pessoa.
 def gera_dados():
-    pessoa= {"Nome":  fake.name(),
-             "Cpf":  fake.cpf(),
-             "Idade":  random.randint(18,80),
-             "Telefone":  fake.cellphone_number()
-             }
+    """
+    Gera um dicionário contendo informações fictícias de uma pessoa, incluindo:
+    nome, CPF, idade, telefone e data de nascimento.
+
+    Retorna:
+        dict: Um dicionário contendo os seguintes dados da pessoa:
+            - "Nome" (str): Nome completo fictício.
+            - "Cpf" (str): CPF fictício formatado.
+            - "Idade" (int): Idade calculada com base na data de nascimento.
+            - "Telefone" (str): Número de telefone celular fictício.
+            - "Data de nascimento" (str): Data de nascimento formatada no padrão "dd/mm/yyyy".
+    """
+    data_nascimento = fake.date_of_birth(minimum_age=18, maximum_age=110)
+    hoje = date.today()
+    
+    idade = hoje.year - data_nascimento.year - ((hoje.month, hoje.day) < (data_nascimento.month, data_nascimento.day))
+
+    pessoa = {
+        "Nome": fake.name(),
+        "Cpf": fake.cpf(),
+        "Idade": idade,
+        "Telefone": fake.cellphone_number(),
+        "Data de nascimento": data_nascimento.strftime("%d/%m/%Y")
+    }
     return pessoa
 
-#Dados vai recebor os dados criados para cada pessoa.
-#Atenção: se necessario for mude a numeração do range para mudar a quantidade de dados gerados.
+def salvar_dados(quantidade=50, arquivo_nome="dados.json"):
+    """
+    Gera e salva um conjunto de dados fictícios em um arquivo JSON.
 
-dados = [gera_dados() for i in range(50)]
+    Parâmetros:
+        quantidade (int, opcional): Número de registros a serem gerados. Padrão é 50.
+        arquivo_nome (str, opcional): Nome do arquivo onde os dados serão salvos. Padrão é "dados.json".
 
-#Nas linhas de código abaixo nos abrimos (ou criamos se não ouver) 0 arquivo dados.json no modo de escrita (w) e chamamos a função jason.dump que serve para escrever os dados dentro da biblioteca dados no aquivo.
+    Retorna:
+        None: Os dados são salvos diretamente no arquivo JSON.
+    """
+    dados = [gera_dados() for _ in range(quantidade)]
 
-with open("dados.json", "w", encoding="utf-8") as arquivo:
-    json.dump(dados, arquivo, indent= 4, ensure_ascii = False)
+    with open(arquivo_nome, "w", encoding="utf-8") as arquivo:
+        json.dump(dados, arquivo, indent=4, ensure_ascii=False)
+
+# Gera e salva os dados fictícios
+salvar_dados()
