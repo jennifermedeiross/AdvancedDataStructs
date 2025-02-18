@@ -51,3 +51,14 @@ Baixa e aplica as versões mais recentes das dependências especificadas:
 ```sh
 ./gradlew build --refresh-dependencies
 ```
+
+## Geração de Dados
+A geração de dados usa a biblioteca [Faker](https://faker.readthedocs.io/en/master/) do Python.
+
+### Como gerar
+No diretório `/data-generator`, execute:
+```shell
+chmod +x generate.sh
+./generate.sh
+```
+O script instalará as dependências e gerará os dados automaticamente.
