@@ -56,9 +56,15 @@ Baixa e aplica as versões mais recentes das dependências especificadas:
 A geração de dados usa a biblioteca [Faker](https://faker.readthedocs.io/en/master/) do Python.
 
 ### Como gerar
-No diretório `/data-generator`, execute:
-```shell
-chmod +x generate.sh
+No diretório /data-generator, execute:
+
+#### Linux/macOS:
+```sh
+chmod +x generate.sh  
 ./generate.sh
+```
+#### Windows:
+```sh
+./generate.bat
 ```
 O script instalará as dependências e gerará os dados automaticamente.
