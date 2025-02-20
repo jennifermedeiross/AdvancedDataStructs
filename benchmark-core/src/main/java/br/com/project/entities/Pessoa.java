@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 
 /**
- * A classe {@code Pessoa} representa uma pessoa com atributos básicos como nome, idade, CPF e telefone.
+ * A classe {@code Pessoa} representa uma pessoa com atributos básicos como nome, idade, CPF e telefone e data de nascimento.
  * Ela inclui métodos para acessar e modificar esses atributos, além de implementar igualdade baseada no CPF.
  */
 public class Pessoa{
@@ -20,10 +20,11 @@ public class Pessoa{
 
     /**
      *
-     * @param nome Nome da pessoa
-     * @param idade idade da pessoa
-     * @param cpf CPF da pessoa(Identificador único)
-     * @param telefone telefone da pessoa
+     * @param nome Nome da pessoa;
+     * @param idade idade da pessoa;
+     * @param cpf CPF da pessoa(Identificador único);
+     * @param telefone telefone da pessoa;
+     * @param dataNascimento Data de nascimento da pessoa.
      */
 
     public Pessoa(String nome, int idade , String cpf , String telefone, LocalDate dataNascimento){
