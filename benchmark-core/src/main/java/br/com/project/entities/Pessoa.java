@@ -17,7 +17,7 @@ public class Pessoa{
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate dataNascimento;
 
-<<<<<<< HEAD
+
     /**
      *
      * @param nome Nome da pessoa
