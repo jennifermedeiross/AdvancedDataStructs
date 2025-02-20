@@ -2,10 +2,10 @@
 # Hook para bloquear arquivos de IDE no commit
 
 # Lista de arquivos bloqueados
-blocked_files=$(git diff --cached --name-only | grep -E "(\.idea/|\.iml|\.vscode/|\.classpath|\.project|\.settings/)")
+blocked_files=$(git diff --cached --name-only | grep -E "(\.idea/|\.iml|\.vscode/|\.classpath|\.project|\.settings/|\.json$)")
 
 if [[ $blocked_files ]]; then
-    echo "Não é possível commitar arquivos de IDE!"
+    echo "Não é possível commitar arquivos de IDE ou .json!"
     echo "Arquivos bloqueados:"
     echo "$blocked_files"
     echo "Remova-os do commit antes de prosseguir."

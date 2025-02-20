@@ -1,6 +1,8 @@
 package br.com.project.entities;
 
+import java.time.LocalDate;
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 
 /**
@@ -12,7 +14,10 @@ public class Pessoa{
     private int idade;
     private String cpf;
     private String telefone;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    private LocalDate dataNascimento;
 
+<<<<<<< HEAD
     /**
      *
      * @param nome Nome da pessoa
@@ -20,12 +25,17 @@ public class Pessoa{
      * @param cpf CPF da pessoa(Identificador único)
      * @param telefone telefone da pessoa
      */
-    public Pessoa(String nome, int idade , String cpf , String telefone){
+
+    public Pessoa(String nome, int idade , String cpf , String telefone, LocalDate dataNascimento){
+
         this.idade = idade;
         this.nome = nome;
         this.cpf = cpf;
         this.telefone = telefone;
+        this.dataNascimento = dataNascimento;
     }
+
+    public Pessoa(){}
 
     public String getNome(){
         return this.nome;
@@ -58,9 +68,13 @@ public class Pessoa{
         this.telefone = telefone;
     }
 
+    public LocalDate getDataNascimento() { return dataNascimento; }
+
+    public void setDataNascimento(LocalDate dataNascimento) { this.dataNascimento = dataNascimento; }
+
     @Override
     public String toString(){
-        return "Nome : " + this.nome + "\nIdade : " + this.idade + "\nCPF : " + this.cpf + "\nTelefone : " + this.telefone;
+        return "Nome : " + this.nome +"\nData de nascimento : " + this.dataNascimento + "\nIdade : " + this.idade + "\nCPF : " + this.cpf + "\nTelefone : " + this.telefone;
     }
 
     @Override
