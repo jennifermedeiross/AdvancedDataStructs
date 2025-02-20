@@ -2,12 +2,24 @@ package br.com.project.entities;
 
 import java.util.Objects;
 
+
+/**
+ * A classe {@code Pessoa} representa uma pessoa com atributos básicos como nome, idade, CPF e telefone.
+ * Ela inclui métodos para acessar e modificar esses atributos, além de implementar igualdade baseada no CPF.
+ */
 public class Pessoa{
     private String nome;
     private int idade;
     private String cpf;
     private String telefone;
 
+    /**
+     *
+     * @param nome Nome da pessoa
+     * @param idade idade da pessoa
+     * @param cpf CPF da pessoa(Identificador único)
+     * @param telefone telefone da pessoa
+     */
     public Pessoa(String nome, int idade , String cpf , String telefone){
         this.idade = idade;
         this.nome = nome;
