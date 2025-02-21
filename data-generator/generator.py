@@ -23,11 +23,11 @@ def gera_dados():
     idade = hoje.year - data_nascimento.year - ((hoje.month, hoje.day) < (data_nascimento.month, data_nascimento.day))
 
     pessoa = {
-        "Nome": fake.name(),
-        "Cpf": fake.cpf(),
-        "Idade": idade,
-        "Telefone": fake.cellphone_number(),
-        "Data de nascimento": data_nascimento.strftime("%d/%m/%Y")
+        "nome": fake.name(),
+        "cpf": fake.cpf(),
+        "idade": idade,
+        "telefone": fake.cellphone_number(),
+        "dataNascimento": data_nascimento.strftime("%d/%m/%Y")
     }
     return pessoa
 
