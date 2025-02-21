@@ -4,6 +4,11 @@ import java.time.LocalDate;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+
+/**
+ * A classe {@code Pessoa} representa uma pessoa com atributos básicos como nome, idade, CPF e telefone e data de nascimento.
+ * Ela inclui métodos para acessar e modificar esses atributos, além de implementar igualdade baseada no CPF.
+ */
 public class Pessoa{
     private String nome;
     private int idade;
@@ -12,7 +17,18 @@ public class Pessoa{
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate dataNascimento;
 
+
+    /**
+     *
+     * @param nome Nome da pessoa;
+     * @param idade idade da pessoa;
+     * @param cpf CPF da pessoa(Identificador único);
+     * @param telefone telefone da pessoa;
+     * @param dataNascimento Data de nascimento da pessoa.
+     */
+
     public Pessoa(String nome, int idade , String cpf , String telefone, LocalDate dataNascimento){
+
         this.idade = idade;
         this.nome = nome;
         this.cpf = cpf;
@@ -59,7 +75,7 @@ public class Pessoa{
 
     @Override
     public String toString(){
-        return "Nome : " + this.nome + "\nIdade : " + this.idade + "\nCPF : " + this.cpf + "\nTelefone : " + this.telefone;
+        return "Nome : " + this.nome +"\nData de nascimento : " + this.dataNascimento + "\nIdade : " + this.idade + "\nCPF : " + this.cpf + "\nTelefone : " + this.telefone;
     }
 
     @Override
