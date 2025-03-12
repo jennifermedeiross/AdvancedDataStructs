@@ -3,11 +3,11 @@ package br.com.project.structs.lsm.utils;
 import java.util.Iterator;
 
 /**
- * Skip duplicates in a sorted iterator by keeping only the first one.
+ * Ignora duplicatas em um Iterator ordenado, mantendo apenas a primeira ocorrência.
  * <p>
- * Reads after the last element of the last Iterator will return null.
+ * Leituras após o último elemento do último Iterator retornarão *null*.
  *
- * @param <T> The type of the elements in the Iterators.
+ * @param <T> O tipo dos elementos nos Iterators.
  */
 public class UniqueSortedIterator<T extends Comparable<T>> implements Iterator<T> {
 
