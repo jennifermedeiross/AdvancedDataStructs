@@ -1,69 +1,77 @@
 package br.com.project.structs.lsm.memtable;
 
+import br.com.project.structs.lsm.comparator.ByteArrayComparator;
 import br.com.project.structs.lsm.types.ByteArrayPair;
 import br.com.project.structs.lsm.utils.UniqueSortedIterator;
 
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentSkipListMap;
 
+/**
+ * Memtable é a estrutura de dados que armazena temporariamente os pares chave-valor
+ * na memória antes de serem persistidos em disco como SSTables.
+ * Utiliza um ConcurrentSkipListMap para armazenar os dados de forma ordenada.
+ */
 public class Memtable implements Iterable<ByteArrayPair> {
 
-    SkipList list;
-    long byteSize;
+    private final ConcurrentSkipListMap<byte[], byte[]> map;
+    private long byteSize;
 
     /**
-     * Initialize a Memtable with default list size.
+     * Inicializa uma Memtable com um ConcurrentSkipListMap vazio.
      */
     public Memtable() {
-        list = new SkipList();
+        map = new ConcurrentSkipListMap<>(ByteArrayComparator::compare); // Comparação de bytes
         byteSize = 0L;
     }
 
     /**
-     * Add an item to the underlying list.
+     * Adiciona um item à Memtable.
      *
-     * @param item the item to add.
+     * @param item O par chave-valor a ser armazenado.
      */
     public void add(ByteArrayPair item) {
-        list.add(item);
+        map.put(item.key(), item.value());
         byteSize += item.size();
     }
 
     /**
-     * Retrieve an item from the underlying list.
+     * Recupera um item armazenado na Memtable a partir da chave fornecida.
      *
-     * @param key the key of the wanted element.
-     * @return the found element or null.
+     * @param key A chave do elemento desejado.
+     * @return O valor correspondente à chave ou null caso não exista.
      */
     public byte[] get(byte[] key) {
-        return list.get(key);
+        return map.get(key);
     }
 
     /**
-     * Remove an element by inserting a tombstone.
+     * Remove um elemento da Memtable, inserindo um "tombstone" para indicar a exclusão lógica.
      *
-     * @param key the key of the element to remove.
+     * @param key A chave do elemento a ser removido.
      */
     public void remove(byte[] key) {
-        list.add(new ByteArrayPair(key, new byte[]{}));
+        map.remove(key);
     }
 
     /**
-     * Return the size in bytes of the skiplist.
+     * Retorna o tamanho da Memtable em bytes.
      *
-     * @return bytes indicating size of underlying list.
+     * @return O tamanho total em bytes da lista subjacente.
      */
     public long byteSize() {
         return byteSize;
     }
 
     /**
-     * Returns an iterator discarding duplicated elements.
+     * Retorna um iterador sobre os elementos da Memtable, eliminando duplicatas.
      *
-     * @return modified underlying list iterator.
+     * @return Um iterador modificado da lista subjacente.
      */
     @Override
     public Iterator<ByteArrayPair> iterator() {
-        return new UniqueSortedIterator<>(list.iterator());
+        return new UniqueSortedIterator<>(map.entrySet().stream()
+                .map(e -> new ByteArrayPair(e.getKey(), e.getValue()))
+                .iterator());
     }
-
 }

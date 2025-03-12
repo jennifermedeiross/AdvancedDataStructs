@@ -10,7 +10,8 @@ import static java.lang.Math.ceil;
 import static java.lang.Math.log;
 
 /**
- * A skip list implementation of ByteArrayPairs.
+ * Implementação de uma Skip List para armazenar pares chave-valor do tipo ByteArrayPair.
+ * Essa estrutura permite buscas, inserções e remoções eficientes, mantendo os dados ordenados.
  */
 public class SkipList implements Iterable<ByteArrayPair> {
 
@@ -25,19 +26,19 @@ public class SkipList implements Iterable<ByteArrayPair> {
     int size;
 
     /**
-     * Create a skip list with a default number of elements, 2 ^ 16.
+     * Cria uma Skip List com um número padrão de elementos (2^20).
      */
     public SkipList() {
         this(DEFAULT_ELEMENTS);
     }
 
     /**
-     * Create a skip list with a specified number of elements.
+     * Cria uma Skip List dimensionada para um número específico de elementos.
      *
-     * @param numElements The number of elements to size the skip list for.
+     * @param numElements Número estimado de elementos a serem armazenados.
      */
     public SkipList(int numElements) {
-        levels = (int) ceil(log(numElements) / log(2));
+        levels = (int) ceil(log(numElements) / log(2)); // Define o número de níveis com base no número de elementos
         size = 0;
         sentinel = new Node(null, levels);
         rn = new XoRoShiRo128PlusRandom();
@@ -45,9 +46,9 @@ public class SkipList implements Iterable<ByteArrayPair> {
     }
 
     /**
-     * Add an item to the skip list.
+     * Adiciona um item à Skip List.
      *
-     * @param item The item to add.
+     * @param item O par chave-valor a ser adicionado.
      */
     public void add(ByteArrayPair item) {
         Node current = sentinel;
@@ -57,11 +58,13 @@ public class SkipList implements Iterable<ByteArrayPair> {
             buffer[i] = current;
         }
 
+        // Se a chave já existe, apenas atualiza o valor
         if (current.next[0] != null && current.next[0].val.compareTo(item) == 0) {
             current.next[0].val = item;
             return;
         }
 
+        // Criação de um novo nó e atualização dos ponteiros nos níveis adequados
         Node newNode = new Node(item, levels);
         for (int i = 0; i < randomLevel(); i++) {
             newNode.next[i] = buffer[i].next[i];
@@ -70,6 +73,11 @@ public class SkipList implements Iterable<ByteArrayPair> {
         size++;
     }
 
+    /**
+     * Gera aleatoriamente o nível de um novo nó, com base em um gerador de números pseudoaleatórios.
+     *
+     * @return O nível gerado para o novo nó.
+     */
     private int randomLevel() {
         int level = 1;
         long n = rn.nextLong();
@@ -79,10 +87,10 @@ public class SkipList implements Iterable<ByteArrayPair> {
     }
 
     /**
-     * Retrieve an item from the skip list.
+     * Busca um item na Skip List a partir da chave fornecida.
      *
-     * @param key The key of the item to retrieve.
-     * @return The item if found, null otherwise.
+     * @param key A chave do item a ser recuperado.
+     * @return O valor associado à chave ou null se não encontrado.
      */
     public byte[] get(byte[] key) {
         Node current = sentinel;
@@ -98,9 +106,9 @@ public class SkipList implements Iterable<ByteArrayPair> {
     }
 
     /**
-     * Remove an item from the skip list.
+     * Remove um item da Skip List a partir da chave fornecida.
      *
-     * @param key The key of the item to remove.
+     * @param key A chave do item a ser removido.
      */
     public void remove(byte[] key) {
         Node current = sentinel;
@@ -122,53 +130,61 @@ public class SkipList implements Iterable<ByteArrayPair> {
     }
 
     /**
-     * Get the number of items in the skip list.
+     * Retorna a quantidade de itens na Skip List.
      *
-     * @return Skip list size.
+     * @return O número de elementos armazenados.
      */
     public int size() {
         return size;
     }
 
     /**
-     * Get an iterator over the items in the skip list at the lowest level.
+     * Retorna um iterador sobre os elementos armazenados na Skip List, percorrendo o nível mais baixo.
      *
-     * @return An iterator over the items in the skip list.
+     * @return Um iterador para os itens armazenados.
      */
     @Override
     public Iterator<ByteArrayPair> iterator() {
         return new SkipListIterator(sentinel);
     }
 
+    /**
+     * Retorna uma representação em string da Skip List, exibindo os níveis e os nós armazenados.
+     *
+     * @return Uma string representando a estrutura da Skip List.
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (int i = levels - 1; i >= 0; i--) {
-            sb.append(String.format("Level %2d: ", i));
+            sb.append(String.format("Nível %2d: ", i));
             Node current = sentinel;
             while (current.next[i] != null) {
                 sb.append(current.next[i].val).append(" -> ");
                 current = current.next[i];
             }
-            sb.append("END\n");
+            sb.append("FIM\n");
         }
         return sb.toString();
     }
 
+    /**
+     * Classe interna representando um nó da Skip List.
+     */
     private static final class Node {
-
-        ByteArrayPair val;
-        Node[] next;
+        ByteArrayPair val; // Par chave-valor armazenado no nó
+        Node[] next; // Array de ponteiros para os próximos nós em cada nível
 
         Node(ByteArrayPair val, int numLevels) {
             this.val = val;
             this.next = new Node[numLevels];
         }
-
     }
 
+    /**
+     * Classe interna que implementa um iterador sobre os elementos da Skip List.
+     */
     private static class SkipListIterator implements Iterator<ByteArrayPair> {
-
         Node node;
 
         SkipListIterator(Node node) {
@@ -190,7 +206,5 @@ public class SkipList implements Iterable<ByteArrayPair> {
 
             return res;
         }
-
     }
-
 }
