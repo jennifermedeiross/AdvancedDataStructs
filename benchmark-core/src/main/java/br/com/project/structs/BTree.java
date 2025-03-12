@@ -11,7 +11,7 @@ import java.util.List;
 *  Implementação de uma B-Tree (Árvore B) para armazenar objetos da classe
  * {@code Pessoa}.
  * A árvore mantém os dados ordenados pelo CPF e suporta inserção , busca e
- * deleção.
+ * remoção.
  */
 public class BTree {
     private BTreeNode root;
