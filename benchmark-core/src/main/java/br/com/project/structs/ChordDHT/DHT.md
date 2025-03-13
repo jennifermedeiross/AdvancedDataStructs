@@ -1,4 +1,4 @@
-### Chord DHT - Documentação
+# Chord DHT - Documentação
 
 Esta documentação descreve uma **DHT (Distributed Hash Table)** baseada no protocolo **Chord**. O objetivo é armazenar e recuperar dados de forma distribuída (aqui, **simulada localmente**) com roteamento em O(log N) e manutenção dinâmica de nós.
 
