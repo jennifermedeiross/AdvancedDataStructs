@@ -6,8 +6,7 @@ import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
 import java.io.FileOutputStream;
 
 /**
- * This class use a FastBufferedOutputStream as a base and adds
- * utility methods to it, mainly for writing variable-byte encoded longs and integers.
+ * Classe para escrita de inteiros e longs codificados em bytes variáveis utilizando FastBufferedOutputStream.
  */
 public class ExtendedOutputStream {
 
@@ -15,9 +14,9 @@ public class ExtendedOutputStream {
     private final FastBufferedOutputStream fos;
 
     /**
-     * Initialize an output stream on a file.
+     * Inicializa um fluxo de saída para um arquivo.
      *
-     * @param filename the file filename.
+     * @param filename o nome do arquivo.
      */
     public ExtendedOutputStream(String filename) {
         try {
@@ -29,10 +28,10 @@ public class ExtendedOutputStream {
     }
 
     /**
-     * Write a byte array to the stream.
+     * Escreve um array de bytes no fluxo.
      *
-     * @param bytes array to write.
-     * @return number of written bytes.
+     * @param bytes array a ser escrito.
+     * @return número de bytes escritos.
      */
     public int write(byte[] bytes) {
         try {
@@ -44,70 +43,50 @@ public class ExtendedOutputStream {
     }
 
     /**
-     * Write a variable-byte int to the stream.
+     * Escreve um inteiro codificado em bytes variáveis no fluxo.
      *
-     * @param n integer to write.
-     * @return number of written bytes.
+     * @param n inteiro a ser escrito.
+     * @return número de bytes escritos.
      */
     public int writeVByteInt(int n) {
         return write(intToVByte(n));
     }
 
     /**
-     * Write a variable-byte long to the stream.
+     * Escreve um long codificado em bytes variáveis no fluxo.
      *
-     * @param n long to write.
-     * @return number of written bytes.
+     * @param n long a ser escrito.
+     * @return número de bytes escritos.
      */
     public int writeVByteLong(long n) {
         return write(longToVByte(n));
     }
 
     /**
-     * Write 64 bits to the stream.
+     * Escreve 64 bits no fluxo.
      *
-     * @param n long to write.
-     * @return number of written bytes.
+     * @param n long a ser escrito.
+     * @return número de bytes escritos.
      */
     public int writeLong(long n) {
         return write(longToBytes(n));
     }
 
     /**
-     * Write a ByteArrayPair from the stream.
-     * <p>
-     * Each array is encoded as length, payload.
+     * Escreve um ByteArrayPair no fluxo.
      *
-     * @param pair item to write.
-     * @return number of written bytes.
+     * @param pair item a ser escrito.
+     * @return número de bytes escritos.
      */
     public int writeByteArrayPair(ByteArrayPair pair) {
-        byte[] key = pair.key(), value = pair.value();
-        byte[] keyBytes = intToVByte(key.length), valueBytes = intToVByte(value.length);
-
-        byte[] result = new byte[keyBytes.length + valueBytes.length + key.length + value.length];
-
-        System.arraycopy(keyBytes, 0, result, 0, keyBytes.length);
-        System.arraycopy(valueBytes, 0, result, keyBytes.length, valueBytes.length);
-
-        System.arraycopy(key, 0, result, keyBytes.length + valueBytes.length, key.length);
-        System.arraycopy(value, 0, result, keyBytes.length + valueBytes.length + key.length, value.length);
-        return write(result);
+        return write(longToVByte(pair.key().length))
+                + write(longToVByte(pair.value().length))
+                + write(pair.key())
+                + write(pair.value());
     }
 
     /**
-     * Convert an int in V-Byte representation.
-     *
-     * @param n int to convert.
-     * @return byte array storing the result.
-     */
-    byte[] intToVByte(int n) {
-        return longToVByte(n);
-    }
-
-
-    /**
-     * Close resources.
+     * Fecha os recursos do fluxo.
      */
     public void close() {
         try {
@@ -117,32 +96,51 @@ public class ExtendedOutputStream {
         }
     }
 
+    /**
+     * Converte um número long para bytes codificados com comprimento variável.
+     */
     private byte[] longToVByte(long n) {
-        n++;
-
-        if (n <= 0) {
-            throw new IllegalArgumentException("n must be greater than 0");
-        }
+        if (++n <= 0) throw new IllegalArgumentException("n deve ser maior que 0");
 
         int i = 0;
         while (n > 0) {
             VBYTE_BUFFER[i++] = (byte) (n & 0x7F);
-            n >>>= 7;
+            n = n / 128;
         }
-
         VBYTE_BUFFER[i - 1] |= 0x80;
+
         byte[] res = new byte[i];
         System.arraycopy(VBYTE_BUFFER, 0, res, 0, i);
         return res;
     }
 
+    /**
+     * Converte um número long para 8 bytes.
+     */
     private byte[] longToBytes(long n) {
         byte[] result = new byte[8];
-        for (int i = 7; i >= 0; i--) {
+        for (int i = 0; i < 8; i++) {
             result[i] = (byte) (n & 0xFF);
-            n >>>= 8;
+            n = n / 256;
         }
         return result;
     }
 
+    /**
+     * Converte um número inteiro para bytes codificados com comprimento variável.
+     */
+    private byte[] intToVByte(int n) {
+        if (++n <= 0) throw new IllegalArgumentException("n deve ser maior que 0");
+
+        int i = 0;
+        while (n > 0) {
+            VBYTE_BUFFER[i++] = (byte) (n & 0x7F);
+            n = n / 128;
+        }
+        VBYTE_BUFFER[i - 1] |= 0x80;
+
+        byte[] res = new byte[i];
+        System.arraycopy(VBYTE_BUFFER, 0, res, 0, i);
+        return res;
+    }
 }

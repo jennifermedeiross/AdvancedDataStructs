@@ -5,13 +5,19 @@ import br.com.project.structs.lsm.utils.UniqueSortedIterator;
 
 import java.util.Iterator;
 
+/**
+ * A Memtable é uma estrutura de dados que mantém pares chave-valor em memória.
+ * Utiliza uma SkipList para armazenar os dados de forma ordenada e eficiente.
+ * A Memtable é a primeira camada de escrita na arquitetura LSM-Tree,
+ * acumulando dados antes de serem persistidos em disco.
+ */
 public class Memtable implements Iterable<ByteArrayPair> {
 
     SkipList list;
     long byteSize;
 
     /**
-     * Initialize a Memtable with default list size.
+     * Inicializa uma Memtable com tamanho padrão para a lista subjacente.
      */
     public Memtable() {
         list = new SkipList();
@@ -19,9 +25,9 @@ public class Memtable implements Iterable<ByteArrayPair> {
     }
 
     /**
-     * Add an item to the underlying list.
+     * Adiciona um item à lista subjacente.
      *
-     * @param item the item to add.
+     * @param item o item a ser adicionado.
      */
     public void add(ByteArrayPair item) {
         list.add(item);
@@ -29,41 +35,41 @@ public class Memtable implements Iterable<ByteArrayPair> {
     }
 
     /**
-     * Retrieve an item from the underlying list.
+     * Recupera um item da lista subjacente com base na chave fornecida.
      *
-     * @param key the key of the wanted element.
-     * @return the found element or null.
+     * @param key a chave do elemento desejado.
+     * @return o elemento encontrado ou null se não existir.
      */
     public byte[] get(byte[] key) {
         return list.get(key);
     }
 
     /**
-     * Remove an element by inserting a tombstone.
+     * Remove um elemento da lista ao inserir um tombstone.
+     * Um tombstone indica que a chave foi removida e será tratada posteriormente na compactação.
      *
-     * @param key the key of the element to remove.
+     * @param key a chave do elemento a ser removido.
      */
     public void remove(byte[] key) {
         list.add(new ByteArrayPair(key, new byte[]{}));
     }
 
     /**
-     * Return the size in bytes of the skiplist.
+     * Retorna o tamanho total em bytes da SkipList.
      *
-     * @return bytes indicating size of underlying list.
+     * @return o tamanho em bytes da lista subjacente.
      */
     public long byteSize() {
         return byteSize;
     }
 
     /**
-     * Returns an iterator discarding duplicated elements.
+     * Retorna um iterador que descarta elementos duplicados.
      *
-     * @return modified underlying list iterator.
+     * @return um iterador modificado da lista subjacente.
      */
     @Override
     public Iterator<ByteArrayPair> iterator() {
         return new UniqueSortedIterator<>(list.iterator());
     }
-
 }
