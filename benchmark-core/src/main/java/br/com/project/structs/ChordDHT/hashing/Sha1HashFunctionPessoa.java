@@ -1,4 +1,4 @@
-package main.java.br.com.project.structs.ChordDHT.hashing;
+package br.com.project.structs.ChordDHT.hashing;
 
 import br.com.project.entities.Pessoa;
 
