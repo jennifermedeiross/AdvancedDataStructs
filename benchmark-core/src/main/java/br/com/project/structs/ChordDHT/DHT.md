@@ -26,6 +26,8 @@ Quando precisamos inserir ou buscar uma chave (por exemplo, o hash de um CPF), l
 
 2. Estrutura de Pastas e Classes
 
+2. Estrutura de Pastas e Classes
+
 benchmark-core
 └── src
     └── main
