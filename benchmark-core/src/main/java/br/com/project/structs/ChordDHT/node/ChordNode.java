@@ -1,9 +1,8 @@
-package main.java.br.com.project.structs.ChordDHT.node;
+package br.com.project.structs.ChordDHT.node;
 
-import main.java.br.com.project.structs.ChordDHT.node.FingerTable;
-import main.java.br.com.project.structs.ChordDHT.node.NodeReference;
-import main.java.br.com.project.structs.ChordDHT.hashing.HashFunction;
 import br.com.project.entities.Pessoa;
+import br.com.project.structs.ChordDHT.hashing.HashFunction;
+
 import java.util.*;
 
 
@@ -264,19 +263,19 @@ public class ChordNode {
      *       seu predecessor se necessário.</li>
      * </ol>
      */
-    public void stabilize() {
-        ChordNode successorNode = findNodeObject(successor);
-        if (successorNode == null) {
-            return;
-        }
-
-        NodeReference x = successorNode.getPredecessor();
-        if (x != null && x != self && inInterval(x.getId(), self.getId(), successor.getId(), false)) {
-            this.successor = x;
-        }
-
-        successorNode.notify(self);
-    }
+//    public void stabilize() {
+//        ChordNode successorNode = findNodeObject(successor);
+//        if (successorNode == null) {
+//            return;
+//        }
+//
+//        NodeReference x = successorNode.getPredecessor();
+//        if (x != null && x != self && inInterval(x.getId(), self.getId(), successor.getId(), false)) {
+//            this.successor = x;
+//        }
+//
+//        successorNode.notify(self);
+//    }
 
     /**
      * Verifica se o valor {@code check} está no intervalo (start, end) 
@@ -321,9 +320,9 @@ public class ChordNode {
      * @param ref a referência do nó que se deseja obter
      * @return o objeto {@link ChordNode} associado a {@code ref}, ou {@code null} se não existir
      */
-    private ChordNode findNodeObject(NodeReference ref) {
-        return ChordSimulator.localNetwork.get(ref);
-    }
+//    private ChordNode findNodeObject(NodeReference ref) {
+//        return ChordSimulator.localNetwork.get(ref);
+//    }
 
     /**
      * Atualiza periodicamente uma das entradas da finger table (controlada por {@code nextFinger}).
@@ -349,18 +348,18 @@ public class ChordNode {
      *
      * @param p a instância de {@link Pessoa} que será inserida no anel
      */
-    public void putPessoa(Pessoa p) {
-        BigInteger keyHash = hashFunction.hash(p.getCpf());
-        NodeReference owner = findSuccessor(keyHash, self);
-        if (owner.equals(self)) {
-            localStorage.put(keyHash, p);
-        } else {
-            ChordNode ownerNode = findNodeObject(owner);
-            if (ownerNode != null) {
-                ownerNode.storePessoaLocal(keyHash, p);
-            }
-        }
-    }
+//    public void putPessoa(Pessoa p) {
+//        BigInteger keyHash = hashFunction.hash(p.getCpf());
+//        NodeReference owner = findSuccessor(keyHash, self);
+//        if (owner.equals(self)) {
+//            localStorage.put(keyHash, p);
+//        } else {
+//            ChordNode ownerNode = findNodeObject(owner);
+//            if (ownerNode != null) {
+//                ownerNode.storePessoaLocal(keyHash, p);
+//            }
+//        }
+//    }
 
     /**
      * Recupera uma pessoa do anel Chord, dado um CPF.
@@ -373,19 +372,19 @@ public class ChordNode {
      * @return a instância de {@link Pessoa} correspondente ao CPF, 
      *         ou {@code null} se não for encontrada
      */
-    public Pessoa getPessoa(String cpf) {
-        BigInteger keyHash = hashFunction.hash(cpf);
-        NodeReference owner = findSuccessor(keyHash, self);
-        if (owner.equals(self)) {
-            return localStorage.get(keyHash);
-        } else {
-            ChordNode ownerNode = findNodeObject(owner);
-            if (ownerNode != null) {
-                return ownerNode.getPessoaLocal(keyHash);
-            }
-        }
-        return null;
-    }
+//    public Pessoa getPessoa(String cpf) {
+//        BigInteger keyHash = hashFunction.hash(cpf);
+//        NodeReference owner = findSuccessor(keyHash, self);
+//        if (owner.equals(self)) {
+//            return localStorage.get(keyHash);
+//        } else {
+//            ChordNode ownerNode = findNodeObject(owner);
+//            if (ownerNode != null) {
+//                return ownerNode.getPessoaLocal(keyHash);
+//            }
+//        }
+//        return null;
+//    }
 
     /**
      * Armazena uma pessoa localmente, sem roteamento.
@@ -422,25 +421,25 @@ public class ChordNode {
      * 3) Ajusta o {@code predecessor} e {@code successor} para que se apontem mutuamente.<br>
      * 4) Finaliza recursos e remove este nó do {@code localNetwork}.
      */
-    public void leave() {
-        if (self.equals(successor) && self.equals(predecessor)) {
-            shutdownNode();
-            return;
-        }
-    
-        transferKeysToSuccessor();
-    
-        ChordNode predNode = findNodeObject(predecessor);
-        ChordNode succNode = findNodeObject(successor);
-    
-        if (predNode != null) {
-            predNode.setSuccessor(successor);
-        }
-        if (succNode != null) {
-            succNode.setPredecessor(predecessor);
-        }
-        shutdownNode();
-    }
+//    public void leave() {
+//        if (self.equals(successor) && self.equals(predecessor)) {
+//            shutdownNode();
+//            return;
+//        }
+//
+//        transferKeysToSuccessor();
+//
+//        ChordNode predNode = findNodeObject(predecessor);
+//        ChordNode succNode = findNodeObject(successor);
+//
+//        if (predNode != null) {
+//            predNode.setSuccessor(successor);
+//        }
+//        if (succNode != null) {
+//            succNode.setPredecessor(predecessor);
+//        }
+//        shutdownNode();
+//    }
 
     /**
      * Transfere todas as chaves armazenadas localmente para o sucessor.
@@ -448,17 +447,17 @@ public class ChordNode {
      * Após a transferência, o armazenamento local deste nó fica vazio.
      * Geralmente chamado dentro de {@link #leave()}.
      */
-    private void transferKeysToSuccessor() {
-        if (!successor.equals(self)) {
-            ChordNode succNode = findNodeObject(successor);
-            if (succNode != null) {
-                for (Map.Entry<BigInteger, Pessoa> e : localStorage.entrySet()) {
-                    succNode.storePessoaLocal(e.getKey(), e.getValue());
-                }
-                localStorage.clear();
-            }
-        }
-    }
+//    private void transferKeysToSuccessor() {
+//        if (!successor.equals(self)) {
+//            ChordNode succNode = findNodeObject(successor);
+//            if (succNode != null) {
+//                for (Map.Entry<BigInteger, Pessoa> e : localStorage.entrySet()) {
+//                    succNode.storePessoaLocal(e.getKey(), e.getValue());
+//                }
+//                localStorage.clear();
+//            }
+//        }
+//    }
     
     /**
      * Encerra este nó localmente, removendo-o do {@code localNetwork} 
@@ -467,9 +466,9 @@ public class ChordNode {
      * Geralmente chamado após {@link #leave()}, quando o nó sai do anel 
      * e não deve mais participar do roteamento ou armazenar dados.
      */
-    private void shutdownNode() {
-        ChordSimulator.localNetwork.remove(self);
-    }
+//    private void shutdownNode() {
+//        ChordSimulator.localNetwork.remove(self);
+//    }
     
     
     /**
@@ -485,23 +484,23 @@ public class ChordNode {
         }
     }
     
-    /**
-     * Inicia um {@link java.util.Timer} que chama periodicamente 
-     * {@link #stabilize()} e {@link #fixFingers()} para manter o anel coerente.
-     * <p>
-     * A cada 2 segundos, as rotinas de estabilização e atualização da finger table 
-     * são executadas, corrigindo eventuais inconsistências e melhorando o roteamento.
-     */
-    public void startStabilizeTimer() {
-    Timer timer = new Timer("chord-stabilize");
-    timer.scheduleAtFixedRate(new TimerTask() {
-        @Override
-        public void run() {
-            stabilize();
-            fixFingers();
-            
-            }
-        }, 2000, 2000); // começa depois de 2s e repete a cada 2s
-    }
+//    /**
+//     * Inicia um {@link java.util.Timer} que chama periodicamente
+//     * {@link #stabilize()} e {@link #fixFingers()} para manter o anel coerente.
+//     * <p>
+//     * A cada 2 segundos, as rotinas de estabilização e atualização da finger table
+//     * são executadas, corrigindo eventuais inconsistências e melhorando o roteamento.
+//     */
+//    public void startStabilizeTimer() {
+//    Timer timer = new Timer("chord-stabilize");
+//    timer.scheduleAtFixedRate(new TimerTask() {
+//        @Override
+//        public void run() {
+//            stabilize();
+//            fixFingers();
+//
+//            }
+//        }, 2000, 2000); // começa depois de 2s e repete a cada 2s
+//    }
 
 }
