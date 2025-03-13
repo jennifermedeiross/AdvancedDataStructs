@@ -34,4 +34,8 @@ dependencies {
 
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.1'
+
+    implementation 'it.unimi.dsi:fastutil:8.5.12'
+    implementation 'it.unimi.dsi:dsiutils:2.7.3'
+    implementation 'commons-codec:commons-codec:1.16.0'
 }
