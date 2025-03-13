@@ -1,4 +1,4 @@
-package main.java.br.com.project.structs.ChordDHT.node;
+package br.com.project.structs.ChordDHT.node;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
