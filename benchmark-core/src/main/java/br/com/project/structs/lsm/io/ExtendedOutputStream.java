@@ -6,9 +6,8 @@ import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
 import java.io.FileOutputStream;
 
 /**
- * Esta classe utiliza um FastBufferedOutputStream como base e adiciona
- * métodos utilitários para gravação, principalmente para valores inteiros e longos
- * codificados em bytes variáveis.
+ * This class use a FastBufferedOutputStream as a base and adds
+ * utility methods to it, mainly for writing variable-byte encoded longs and integers.
  */
 public class ExtendedOutputStream {
 
@@ -16,9 +15,9 @@ public class ExtendedOutputStream {
     private final FastBufferedOutputStream fos;
 
     /**
-     * Inicializa um fluxo de saída em um arquivo.
+     * Initialize an output stream on a file.
      *
-     * @param filename o nome do arquivo.
+     * @param filename the file filename.
      */
     public ExtendedOutputStream(String filename) {
         try {
@@ -30,10 +29,10 @@ public class ExtendedOutputStream {
     }
 
     /**
-     * Escreve um array de bytes no fluxo.
+     * Write a byte array to the stream.
      *
-     * @param bytes array a ser escrito.
-     * @return número de bytes escritos.
+     * @param bytes array to write.
+     * @return number of written bytes.
      */
     public int write(byte[] bytes) {
         try {
@@ -45,41 +44,42 @@ public class ExtendedOutputStream {
     }
 
     /**
-     * Escreve um inteiro codificado em bytes variáveis no fluxo.
+     * Write a variable-byte int to the stream.
      *
-     * @param n inteiro a ser escrito.
-     * @return número de bytes escritos.
+     * @param n integer to write.
+     * @return number of written bytes.
      */
     public int writeVByteInt(int n) {
         return write(intToVByte(n));
     }
 
     /**
-     * Escreve um longo codificado em bytes variáveis no fluxo.
+     * Write a variable-byte long to the stream.
      *
-     * @param n long a ser escrito.
-     * @return número de bytes escritos.
+     * @param n long to write.
+     * @return number of written bytes.
      */
     public int writeVByteLong(long n) {
         return write(longToVByte(n));
     }
 
     /**
-     * Escreve 64 bits no fluxo.
+     * Write 64 bits to the stream.
      *
-     * @param n long a ser escrito.
-     * @return número de bytes escritos.
+     * @param n long to write.
+     * @return number of written bytes.
      */
     public int writeLong(long n) {
         return write(longToBytes(n));
     }
 
     /**
-     * Escreve um ByteArrayPair no fluxo.
-     * Cada array é codificado como comprimento e payload.
+     * Write a ByteArrayPair from the stream.
+     * <p>
+     * Each array is encoded as length, payload.
      *
-     * @param pair item a ser escrito.
-     * @return número de bytes escritos.
+     * @param pair item to write.
+     * @return number of written bytes.
      */
     public int writeByteArrayPair(ByteArrayPair pair) {
         byte[] key = pair.key(), value = pair.value();
@@ -96,17 +96,18 @@ public class ExtendedOutputStream {
     }
 
     /**
-     * Converte um inteiro para representação V-Byte.
+     * Convert an int in V-Byte representation.
      *
-     * @param n inteiro a ser convertido.
-     * @return array de bytes armazenando o resultado.
+     * @param n int to convert.
+     * @return byte array storing the result.
      */
     byte[] intToVByte(int n) {
         return longToVByte(n);
     }
 
+
     /**
-     * Fecha os recursos do fluxo.
+     * Close resources.
      */
     public void close() {
         try {
@@ -120,7 +121,7 @@ public class ExtendedOutputStream {
         n++;
 
         if (n <= 0) {
-            throw new IllegalArgumentException("n deve ser maior que 0");
+            throw new IllegalArgumentException("n must be greater than 0");
         }
 
         int i = 0;
@@ -143,4 +144,5 @@ public class ExtendedOutputStream {
         }
         return result;
     }
+
 }

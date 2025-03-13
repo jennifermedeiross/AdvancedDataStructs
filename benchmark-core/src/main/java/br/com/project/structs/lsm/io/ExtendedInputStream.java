@@ -7,18 +7,17 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
- * Esta classe utiliza um FastBufferedInputStream como base e adiciona
- * métodos utilitários para leitura, principalmente para valores inteiros e longos
- * codificados em bytes variáveis.
+ * This class use a FastBufferedInputStream as a base and adds
+ * utility methods to it, mainly for reading variable-byte encoded longs and integers.
  */
 public class ExtendedInputStream {
 
     private final FastBufferedInputStream fis;
 
     /**
-     * Inicializa um fluxo de entrada em um arquivo.
+     * Initialize an input stream on a file.
      *
-     * @param filename o nome do arquivo.
+     * @param filename the file filename.
      */
     public ExtendedInputStream(String filename) {
         try {
@@ -30,18 +29,25 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Lê um inteiro codificado em bytes variáveis do fluxo.
+     * Read a variable byte int from the stream, see readVByteLong()
      *
-     * @return o próximo inteiro V-Byte.
+     * @return the next V-Byte int.
      */
     public int readVByteInt() {
         return (int) readVByteLong();
     }
 
     /**
-     * Lê um longo codificado em bytes variáveis do fluxo.
+     * Read a variable byte long from the stream.
+     * <p>
+     * A variable byte long is written as:
+     * <tt>|continuation bit| 7-bits payload|</tt>
+     * <p>
+     * For instance the number 10101110101010110 is represented using 24 bits as follows:
+     * <p>
+     * |1|1010110|1|0000101|0|0111010|
      *
-     * @return o próximo long V-Byte.
+     * @return the next V-Byte long.
      */
     public long readVByteLong() {
         long result = 0;
@@ -60,9 +66,9 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Lê 8 bytes representando um long.
+     * Read 8 bytes representing a long.
      *
-     * @return o próximo long no fluxo.
+     * @return the next long in the stream.
      */
     public long readLong() {
         try {
@@ -78,9 +84,9 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Lê um único byte como um inteiro.
+     * Read a single byte as an int.
      *
-     * @return o próximo inteiro de 8 bits no fluxo.
+     * @return the next 8-bits integer in the stream.
      */
     public int readByteInt() {
         try {
@@ -91,10 +97,10 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Lê N bytes do fluxo.
+     * Read N bytes.
      *
-     * @param n o número de bytes desejado.
-     * @return um array com os próximos N bytes.
+     * @param n the wanted number of bytes.
+     * @return an array with the next N bytes.
      */
     public byte[] readNBytes(int n) {
         try {
@@ -105,10 +111,11 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Lê um ByteArrayPair do fluxo.
-     * Cada array é codificado como comprimento e payload.
+     * Read a ByteArrayPair from the stream.
+     * <p>
+     * Each array is encoded as length, payload.
      *
-     * @return o próximo item no fluxo.
+     * @return the next item in the stream.
      */
     public ByteArrayPair readBytePair() {
         try {
@@ -125,10 +132,10 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Pula N bytes no fluxo.
+     * Skip N bytes from the stream.
      *
-     * @param n o número de bytes a serem ignorados.
-     * @return o número de bytes efetivamente ignorados.
+     * @param n the number of bytes to skip.
+     * @return the number of bytes skipped.
      */
     public long skip(int n) {
         try {
@@ -139,9 +146,9 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Posiciona o fluxo no deslocamento desejado.
+     * Position the stream at the wanted offset.
      *
-     * @param offset o deslocamento para onde mover o fluxo.
+     * @param offset the offset to place the stream to.
      */
     public void seek(long offset) {
         try {
@@ -152,7 +159,7 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Fecha os recursos do fluxo.
+     * Close resources.
      */
     public void close() {
         try {
@@ -161,4 +168,5 @@ public class ExtendedInputStream {
             throw new RuntimeException(e);
         }
     }
+
 }
