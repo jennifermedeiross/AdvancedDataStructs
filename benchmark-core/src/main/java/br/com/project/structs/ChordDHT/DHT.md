@@ -1,4 +1,4 @@
-DHT.md
+### DHT.md ###
 
 Este documento descreve a implementação de uma DHT (Distributed Hash Table) baseada no protocolo Chord, utilizada para armazenar e recuperar dados de forma distribuída. No nosso caso, simulamos o comportamento distribuído localmente em um único processo, mas seguimos os princípios de roteamento e manutenção do anel definidos pelo protocolo Chord.
 
@@ -44,8 +44,6 @@ benchmark-core
                                     ├── NodeReference.java
                                 ├── ChordDHT.java (opcional - orquestrador)
                                 └── DHT.md (este arquivo de documentação)
-
-Componentes Principais
 
 1. ChordNode
 
