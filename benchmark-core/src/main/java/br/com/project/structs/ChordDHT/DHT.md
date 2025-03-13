@@ -131,7 +131,8 @@ Pessoa found = nodeB.getPessoa("12345678900");
 System.out.println("Encontrada: " + found);
 
 // Nó B sai
-nodeB.leave();
+nodeB.leave(); 
+```
 
 ---
 
