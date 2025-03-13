@@ -9,19 +9,25 @@ import java.util.Iterator;
 import static java.util.Comparator.comparing;
 
 /**
- * Merges multiple sorted Iterators into a single sorted Iterator.
+ * Mescla múltiplos Iterators ordenados em um único Iterator ordenado.
  * <p>
- * Time complexity to read a single element is O(log n) where n is the number of Iterators.
+ * A complexidade de tempo para ler um único elemento é O(log n), onde n é o número de Iterators.
  * <p>
- * Reads after the last element of the last Iterator will return null.
+ * Chamadas ao método {@code next()} após o último elemento do último Iterator retornarão {@code null}.
  *
- * @param <T> The type of the elements in the Iterators.
+ * @param <T> O tipo dos elementos contidos nos Iterators.
  */
 public class IteratorMerger<T extends Comparable<T>> implements Iterator<T> {
 
     Iterator<T>[] iterators;
     ObjectHeapPriorityQueue<Pair<T, Integer>> queue;
 
+    /**
+     * Constrói um {@code IteratorMerger} a partir de uma lista de Iterators ordenados.
+     * Os elementos serão extraídos de forma ordenada a partir dos Iterators fornecidos.
+     *
+     * @param iterators Lista de Iterators ordenados a serem mesclados.
+     */
     @SafeVarargs
     public IteratorMerger(Iterator<T>... iterators) {
         this.iterators = iterators;
@@ -36,11 +42,22 @@ public class IteratorMerger<T extends Comparable<T>> implements Iterator<T> {
         }
     }
 
+    /**
+     * Verifica se ainda há elementos disponíveis para leitura no Iterator resultante.
+     *
+     * @return {@code true} se houver mais elementos, {@code false} caso contrário.
+     */
     @Override
     public boolean hasNext() {
         return !queue.isEmpty();
     }
 
+    /**
+     * Retorna o próximo elemento ordenado do Iterator mesclado.
+     * Se não houver mais elementos disponíveis, retorna {@code null}.
+     *
+     * @return O próximo elemento ordenado ou {@code null} se não houver mais elementos.
+     */
     @Override
     public T next() {
         if (queue.isEmpty())
@@ -60,5 +77,4 @@ public class IteratorMerger<T extends Comparable<T>> implements Iterator<T> {
 
         return result;
     }
-
 }

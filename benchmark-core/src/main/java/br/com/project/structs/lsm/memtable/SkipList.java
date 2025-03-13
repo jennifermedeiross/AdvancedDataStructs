@@ -2,153 +2,167 @@ package br.com.project.structs.lsm.memtable;
 
 import br.com.project.structs.lsm.types.ByteArrayPair;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
-
 import java.util.Iterator;
-
 import static br.com.project.structs.lsm.comparator.ByteArrayComparator.compare;
 import static java.lang.Math.ceil;
 import static java.lang.Math.log;
 
 /**
- * A skip list implementation of ByteArrayPairs.
+ * Implementação de uma Skip List, uma estrutura de dados que permite inserção,
+ * remoção e busca eficientes em tempo logarítmico. Cada elemento é armazenado
+ * como um par de arrays de bytes (chave e valor).
  */
 public class SkipList implements Iterable<ByteArrayPair> {
 
-    static final int DEFAULT_ELEMENTS = 1 << 20;
+    private static final int DEFAULT_CAPACITY = (int) Math.pow(2, 20);
 
-    final Node sentinel;
+    private final Node head;
+    private final Node[] predecessors;
+    private final XoRoShiRo128PlusRandom randomGenerator;
 
-    private final Node[] buffer;
-    private final XoRoShiRo128PlusRandom rn;
-
-    int levels;
-    int size;
+    private int maxLevels;
+    private int size;
 
     /**
-     * Create a skip list with a default number of elements, 2 ^ 16.
+     * Cria uma Skip List com a capacidade padrão.
      */
     public SkipList() {
-        this(DEFAULT_ELEMENTS);
+        this(DEFAULT_CAPACITY);
     }
 
     /**
-     * Create a skip list with a specified number of elements.
+     * Cria uma Skip List com uma capacidade específica, determinando o número
+     * máximo de níveis com base nesse valor.
      *
-     * @param numElements The number of elements to size the skip list for.
+     * @param capacity Capacidade estimada da estrutura.
      */
-    public SkipList(int numElements) {
-        levels = (int) ceil(log(numElements) / log(2));
-        size = 0;
-        sentinel = new Node(null, levels);
-        rn = new XoRoShiRo128PlusRandom();
-        buffer = new Node[levels];
+    public SkipList(int capacity) {
+        this.maxLevels = (int) ceil(log(capacity) / log(2));
+        this.size = 0;
+        this.head = new Node(null, maxLevels);
+        this.randomGenerator = new XoRoShiRo128PlusRandom();
+        this.predecessors = new Node[maxLevels];
     }
 
     /**
-     * Add an item to the skip list.
+     * Adiciona um novo item à Skip List. Se a chave já existir, o valor é atualizado.
      *
-     * @param item The item to add.
+     * @param newItem O par chave-valor a ser inserido.
      */
-    public void add(ByteArrayPair item) {
-        Node current = sentinel;
-        for (int i = levels - 1; i >= 0; i--) {
-            while (current.next[i] != null && current.next[i].val.compareTo(item) < 0)
-                current = current.next[i];
-            buffer[i] = current;
+    public void add(ByteArrayPair newItem) {
+        Node currentNode = head;
+
+        for (int level = maxLevels - 1; level >= 0; level--) {
+            while (currentNode.next[level] != null && currentNode.next[level].val.compareTo(newItem) < 0) {
+                currentNode = currentNode.next[level];
+            }
+            predecessors[level] = currentNode;
         }
 
-        if (current.next[0] != null && current.next[0].val.compareTo(item) == 0) {
-            current.next[0].val = item;
+        if (currentNode.next[0] != null && currentNode.next[0].val.compareTo(newItem) == 0) {
+            currentNode.next[0].val = newItem;
             return;
         }
 
-        Node newNode = new Node(item, levels);
-        for (int i = 0; i < randomLevel(); i++) {
-            newNode.next[i] = buffer[i].next[i];
-            buffer[i].next[i] = newNode;
+        Node newNode = new Node(newItem, maxLevels);
+        int newNodeLevel = generateRandomLevel();
+
+        for (int level = 0; level < newNodeLevel; level++) {
+            newNode.next[level] = predecessors[level].next[level];
+            predecessors[level].next[level] = newNode;
         }
         size++;
     }
 
-    private int randomLevel() {
+    /**
+     * Gera um nível aleatório para um novo nó, determinando em qual altura
+     * ele será inserido na Skip List.
+     *
+     * @return O nível gerado aleatoriamente.
+     */
+    private int generateRandomLevel() {
         int level = 1;
-        long n = rn.nextLong();
-        while (level < levels && (n & (1L << level)) != 0)
+        long randomValue = randomGenerator.nextLong();
+
+        while (level < maxLevels && (randomValue & (long) Math.pow(2, level)) != 0) {
             level++;
+        }
         return level;
     }
 
     /**
-     * Retrieve an item from the skip list.
+     * Busca um item na Skip List com base na chave fornecida.
      *
-     * @param key The key of the item to retrieve.
-     * @return The item if found, null otherwise.
+     * @param searchKey A chave do elemento a ser buscado.
+     * @return O valor correspondente à chave, ou null se não encontrado.
      */
-    public byte[] get(byte[] key) {
-        Node current = sentinel;
-        for (int i = levels - 1; i >= 0; i--) {
-            while (current.next[i] != null && compare(current.next[i].val.key(), key) < 0)
-                current = current.next[i];
+    public byte[] get(byte[] searchKey) {
+        Node currentNode = head;
+
+        for (int level = maxLevels - 1; level >= 0; level--) {
+            while (currentNode.next[level] != null && compare(currentNode.next[level].val.key(), searchKey) < 0) {
+                currentNode = currentNode.next[level];
+            }
         }
 
-        if (current.next[0] != null && compare(current.next[0].val.key(), key) == 0)
-            return current.next[0].val.value();
-
+        if (currentNode.next[0] != null && compare(currentNode.next[0].val.key(), searchKey) == 0) {
+            return currentNode.next[0].val.value();
+        }
         return null;
     }
 
     /**
-     * Remove an item from the skip list.
+     * Remove um item da Skip List com base na chave fornecida.
      *
-     * @param key The key of the item to remove.
+     * @param keyToRemove A chave do elemento a ser removido.
      */
-    public void remove(byte[] key) {
-        Node current = sentinel;
-        for (int i = levels - 1; i >= 0; i--) {
-            while (current.next[i] != null && compare(current.next[i].val.key(), key) < 0)
-                current = current.next[i];
-            buffer[i] = current;
+    public void remove(byte[] keyToRemove) {
+        Node currentNode = head;
+
+        for (int level = maxLevels - 1; level >= 0; level--) {
+            while (currentNode.next[level] != null && compare(currentNode.next[level].val.key(), keyToRemove) < 0) {
+                currentNode = currentNode.next[level];
+            }
+            predecessors[level] = currentNode;
         }
 
-        if (current.next[0] != null && compare(current.next[0].val.key(), key) == 0) {
-            boolean last = current.next[0].next[0] == null;
-            for (int i = 0; i < levels; i++) {
-                if (buffer[i].next[i] != current.next[0])
+        if (currentNode.next[0] != null && compare(currentNode.next[0].val.key(), keyToRemove) == 0) {
+            Node targetNode = currentNode.next[0];
+            boolean isLastElement = targetNode.next[0] == null;
+
+            for (int level = 0; level < maxLevels; level++) {
+                if (predecessors[level].next[level] != targetNode) {
                     break;
-                buffer[i].next[i] = last ? null : current.next[0].next[i];
+                }
+                predecessors[level].next[level] = isLastElement ? null : targetNode.next[level];
             }
             size--;
         }
     }
 
     /**
-     * Get the number of items in the skip list.
+     * Retorna o número de elementos armazenados na Skip List.
      *
-     * @return Skip list size.
+     * @return A quantidade de elementos.
      */
     public int size() {
         return size;
     }
 
-    /**
-     * Get an iterator over the items in the skip list at the lowest level.
-     *
-     * @return An iterator over the items in the skip list.
-     */
     @Override
     public Iterator<ByteArrayPair> iterator() {
-        return new SkipListIterator(sentinel);
+        return new SkipListIterator(head);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (int i = levels - 1; i >= 0; i--) {
-            sb.append(String.format("Level %2d: ", i));
-            Node current = sentinel;
-            while (current.next[i] != null) {
-                sb.append(current.next[i].val).append(" -> ");
-                current = current.next[i];
+        for (int level = maxLevels - 1; level >= 0; level--) {
+            sb.append(String.format("Level %2d: ", level));
+            Node currentNode = head;
+            while (currentNode.next[level] != null) {
+                sb.append(currentNode.next[level].val).append(" -> ");
+                currentNode = currentNode.next[level];
             }
             sb.append("END\n");
         }
@@ -156,41 +170,33 @@ public class SkipList implements Iterable<ByteArrayPair> {
     }
 
     private static final class Node {
-
         ByteArrayPair val;
         Node[] next;
 
-        Node(ByteArrayPair val, int numLevels) {
+        Node(ByteArrayPair val, int levels) {
             this.val = val;
-            this.next = new Node[numLevels];
+            this.next = new Node[levels];
         }
-
     }
 
     private static class SkipListIterator implements Iterator<ByteArrayPair> {
+        Node currentNode;
 
-        Node node;
-
-        SkipListIterator(Node node) {
-            this.node = node;
+        SkipListIterator(Node head) {
+            this.currentNode = head;
         }
 
         @Override
         public boolean hasNext() {
-            return node.next[0] != null;
+            return currentNode.next[0] != null;
         }
 
         @Override
         public ByteArrayPair next() {
-            if (node.next[0] == null)
-                return null;
-
-            ByteArrayPair res = node.next[0].val;
-            node = node.next[0];
-
-            return res;
+            if (currentNode.next[0] == null) return null;
+            ByteArrayPair result = currentNode.next[0].val;
+            currentNode = currentNode.next[0];
+            return result;
         }
-
     }
-
 }

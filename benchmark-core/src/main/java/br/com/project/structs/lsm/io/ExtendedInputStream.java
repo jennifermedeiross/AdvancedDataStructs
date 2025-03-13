@@ -7,17 +7,18 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
- * This class use a FastBufferedInputStream as a base and adds
- * utility methods to it, mainly for reading variable-byte encoded longs and integers.
+ * Esta classe utiliza um FastBufferedInputStream como base e adiciona
+ * métodos utilitários a ele, principalmente para a leitura de inteiros e longos
+ * codificados em bytes variáveis.
  */
 public class ExtendedInputStream {
 
     private final FastBufferedInputStream fis;
 
     /**
-     * Initialize an input stream on a file.
+     * Inicializa um fluxo de entrada em um arquivo.
      *
-     * @param filename the file filename.
+     * @param filename o nome do arquivo.
      */
     public ExtendedInputStream(String filename) {
         try {
@@ -29,25 +30,27 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Read a variable byte int from the stream, see readVByteLong()
+     * Lê um inteiro codificado em bytes variáveis do fluxo. Veja readVByteLong().
      *
-     * @return the next V-Byte int.
+     * @return o próximo inteiro V-Byte.
      */
     public int readVByteInt() {
         return (int) readVByteLong();
     }
 
     /**
-     * Read a variable byte long from the stream.
+     * Lê um long codificado em bytes variáveis do fluxo.
      * <p>
-     * A variable byte long is written as:
-     * <tt>|continuation bit| 7-bits payload|</tt>
+     * Um long codificado em bytes variáveis é escrito como:
+     * <tt>|bit de continuação| 7 bits de carga útil|</tt>
      * <p>
-     * For instance the number 10101110101010110 is represented using 24 bits as follows:
+     * Por exemplo, suponha que o CPF de uma instância da classe Pessoa seja "123.456.789-01".
+     * Para armazená-lo como um número, pode-se convertê-lo para um valor longo, removendo os separadores,
+     * resultando em 12345678901. Esse valor será representado no fluxo utilizando bytes variáveis da seguinte forma:
      * <p>
-     * |1|1010110|1|0000101|0|0111010|
+     * |1|0110110|1|1100101|0|0010110| ...
      *
-     * @return the next V-Byte long.
+     * @return o próximo long V-Byte.
      */
     public long readVByteLong() {
         long result = 0;
@@ -66,9 +69,9 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Read 8 bytes representing a long.
+     * Lê 8 bytes que representam um long.
      *
-     * @return the next long in the stream.
+     * @return o próximo long no fluxo.
      */
     public long readLong() {
         try {
@@ -84,9 +87,9 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Read a single byte as an int.
+     * Lê um único byte como um inteiro.
      *
-     * @return the next 8-bits integer in the stream.
+     * @return o próximo inteiro de 8 bits no fluxo.
      */
     public int readByteInt() {
         try {
@@ -97,10 +100,10 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Read N bytes.
+     * Lê N bytes.
      *
-     * @param n the wanted number of bytes.
-     * @return an array with the next N bytes.
+     * @param n a quantidade desejada de bytes.
+     * @return um array contendo os próximos N bytes.
      */
     public byte[] readNBytes(int n) {
         try {
@@ -111,11 +114,11 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Read a ByteArrayPair from the stream.
+     * Lê um ByteArrayPair do fluxo.
      * <p>
-     * Each array is encoded as length, payload.
+     * Cada array é codificado como tamanho, seguido do conteúdo.
      *
-     * @return the next item in the stream.
+     * @return o próximo item no fluxo.
      */
     public ByteArrayPair readBytePair() {
         try {
@@ -132,10 +135,10 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Skip N bytes from the stream.
+     * Pula N bytes no fluxo.
      *
-     * @param n the number of bytes to skip.
-     * @return the number of bytes skipped.
+     * @param n o número de bytes a serem ignorados.
+     * @return o número de bytes efetivamente ignorados.
      */
     public long skip(int n) {
         try {
@@ -146,9 +149,9 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Position the stream at the wanted offset.
+     * Posiciona o fluxo no deslocamento desejado.
      *
-     * @param offset the offset to place the stream to.
+     * @param offset o deslocamento para o qual o fluxo deve ser movido.
      */
     public void seek(long offset) {
         try {
@@ -159,7 +162,7 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Close resources.
+     * Fecha os recursos utilizados.
      */
     public void close() {
         try {

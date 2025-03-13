@@ -5,13 +5,10 @@ import br.com.project.structs.lsm.sstable.SSTable;
 import br.com.project.structs.lsm.types.ByteArrayPair;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
-import javax.management.relation.RoleUnresolvedList;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
-import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -19,15 +16,15 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
 /**
- * LSM Tree implementation.
+ * Implementação de uma LSM Tree (Log-Structured Merge Tree).
  * <p>
- * Writes are added to the Memtable, which is flushed when a certain size is reached.
- * SSTables are divided in levels, each level storing bigger tables.
+ * As operações de escrita são adicionadas à Memtable, que é descarregada para o disco quando um tamanho máximo é atingido.
+ * As SSTables são organizadas em níveis, com cada nível armazenando tabelas maiores.
  * <p>
- * When flushed, a Memtable becomes an SSTable at level 1, when the level exceeds
- * a threshold, all its tables are merged and added to the next level.
+ * Quando uma Memtable é descarregada, ela se torna uma SSTable no nível 1. Quando o número de tabelas de um nível
+ * excede um limite, as tabelas desse nível são mescladas e movidas para o próximo nível.
  * <p>
- * Background executors take care of flushing and compaction.
+ * Execuções em segundo plano são responsáveis pelo descarregamento da Memtable e pela compactação das SSTables.
  */
 public class LSMTree {
 
@@ -54,17 +51,18 @@ public class LSMTree {
     ScheduledExecutorService tableCompactor;
 
     /**
-     * Creates a new LSMTree with a default memtable size and data directory.
+     * Cria uma nova LSMTree com o tamanho de Memtable padrão e diretório de dados.
      */
     public LSMTree() {
         this(DEFAULT_MEMTABLE_MAX_BYTE_SIZE, DEFAULT_LEVEL_ZERO_MAX_SIZE, DEFAULT_DATA_DIRECTORY);
     }
 
     /**
-     * Creates a new LSMTree with a memtable size and data directory.
+     * Cria uma nova LSMTree com o tamanho de Memtable e diretório de dados definidos pelo usuário.
      *
-     * @param mutableMemtableMaxByteSize The maximum size of the memtable before it is flushed to disk.
-     * @param dataDir                    The directory to store the data in.
+     * @param mutableMemtableMaxByteSize O tamanho máximo da Memtable antes de ser descarregada para o disco.
+     * @param maxLevelZeroSstNumber      O número máximo de SSTables no nível zero.
+     * @param dataDir                    O diretório onde os dados serão armazenados.
      */
     public LSMTree(long mutableMemtableMaxByteSize, int maxLevelZeroSstNumber, String dataDir) {
         this.mutableMemtableMaxSize = mutableMemtableMaxByteSize;
@@ -87,12 +85,10 @@ public class LSMTree {
         tableCompactor.scheduleAtFixedRate(this::levelCompaction, 200, 200, TimeUnit.MILLISECONDS);
     }
 
-
     /**
-     * Adds an item to the LSMTree.
-     * If the memtable is full, it is flushed to disk.
+     * Adiciona um item à LSMTree. Se a Memtable estiver cheia, ela será descarregada no disco.
      *
-     * @param item The item to add.
+     * @param item O item a ser adicionado.
      */
     public void add(ByteArrayPair item) {
         synchronized (mutableMemtableLock) {
@@ -102,10 +98,9 @@ public class LSMTree {
     }
 
     /**
-     * Removes an item from the LSMTree.
-     * This is done by adding a tombstone to the memtable.
+     * Remove um item da LSMTree. Isso é feito adicionando um "tombstone" (registro de exclusão) à Memtable.
      *
-     * @param key The key of the item to remove.
+     * @param key A chave do item a ser removido.
      */
     public void delete(byte[] key) {
         synchronized (mutableMemtableLock) {
@@ -115,10 +110,10 @@ public class LSMTree {
     }
 
     /**
-     * Gets an item from the LSMTree.
+     * Obtém um item da LSMTree.
      *
-     * @param key The key of the item to get.
-     * @return The value of the item, or null if it does not exist.
+     * @param key A chave do item a ser obtido.
+     * @return O valor do item, ou null se o item não existir.
      */
     public byte[] get(byte[] key) {
         byte[] result;
@@ -154,13 +149,17 @@ public class LSMTree {
     }
 
     /**
-     * Stop the background threads.
+     * Interrompe os executores em segundo plano responsáveis pelo descarregamento da Memtable e compactação das SSTables.
      */
     public void stop() {
         memtableFlusher.shutdownNow();
         tableCompactor.shutdownNow();
     }
 
+    /**
+     * Verifica se a Memtable atingiu o tamanho máximo. Caso tenha atingido, ela é transferida para a lista de Memtables imutáveis
+     * e uma nova Memtable mutável é criada.
+     */
     private void checkMemtableSize() {
         if (mutableMemtable.byteSize() <= mutableMemtableMaxSize)
             return;
@@ -171,6 +170,9 @@ public class LSMTree {
         }
     }
 
+    /**
+     * Descarrega a última Memtable imutável para o disco como uma nova SSTable.
+     */
     private void flushMemtable() {
         Memtable memtableToFlush;
         synchronized (immutableMemtablesLock) {
@@ -191,6 +193,9 @@ public class LSMTree {
         }
     }
 
+    /**
+     * Realiza a compactação das SSTables nos diferentes níveis, mesclando as SSTables entre os níveis e substituindo as tabelas mais antigas.
+     */
     private void levelCompaction() {
         synchronized (tableLock) {
             int n = levels.size();
@@ -202,20 +207,20 @@ public class LSMTree {
                 ObjectArrayList<SSTable> level = levels.get(i);
 
                 if (level.size() > maxLevelSize) {
-                    // add new level if needed
+                    // Adiciona um novo nível se necessário
                     if (i == n - 1)
                         levels.add(new ObjectArrayList<>());
 
-                    // take all tables from the current and next level
+                    // Pega todas as tabelas do nível atual e do próximo
                     ObjectArrayList<SSTable> nextLevel = levels.get(i + 1);
                     ObjectArrayList<SSTable> merge = new ObjectArrayList<>();
                     merge.addAll(level);
                     merge.addAll(nextLevel);
 
-                    // perform a sorted run and replace the next level
+                    // Realiza uma execução ordenada e substitui o próximo nível
                     var sortedRun = SSTable.sortedRun(dataDir, sstMaxSize, merge.toArray(SSTable[]::new));
 
-                    // delete previous tables
+                    // Exclui as tabelas anteriores
                     level.forEach(SSTable::closeAndDelete);
                     level.clear();
                     nextLevel.forEach(SSTable::closeAndDelete);
@@ -230,6 +235,9 @@ public class LSMTree {
         }
     }
 
+    /**
+     * Cria o diretório onde os dados serão armazenados, caso não exista.
+     */
     private void createDataDir() {
         try {
             Files.createDirectories(Paths.get(dataDir));
@@ -240,6 +248,11 @@ public class LSMTree {
         }
     }
 
+    /**
+     * Retorna uma representação em string do estado atual da LSMTree.
+     *
+     * @return A string representando o estado da LSMTree.
+     */
     @Override
     public String toString() {
 
@@ -256,8 +269,8 @@ public class LSMTree {
         for (var level : levels) {
             s.append(String.format("\t\t- %d: ", i));
             level.stream()
-                 .map(st -> String.format("[ %s, size: %d ] ", st.filename, st.size))
-                 .forEach(s::append);
+                    .map(st -> String.format("[ %s, size: %d ] ", st.filename, st.size))
+                    .forEach(s::append);
             s.append("\n");
             i += 1;
         }
