@@ -10,44 +10,46 @@ import static java.lang.Math.ceil;
 import static java.lang.Math.log;
 
 /**
- * Implementação de um filtro de Bloom.
+ * Bloom filter implementation.
  * <p>
- * Dado o número de inserções esperadas e a taxa de falso positivo desejada,
- * o tamanho é calculado como -expectedInsertions * log(falsePositiveRate) / (log(2) * log(2))
- * e o número de funções de hash é calculado como ceil(-log(falsePositiveRate) / log(2)).
+ * Given the number of expected insertions and the desired false positive rate,
+ * the size is computed as -expectedInsertions * log(falsePositiveRate) / (log(2) * log(2))
+ * and the number of hash functions is computed as ceil(-log(falsePositiveRate) / log(2)).
  * <p>
- * Dois hashes são calculados para cada chave usando uma única chamada para MurmurHash3 128 bits.
- * Em seguida, utilizamos a fórmula (h1 + i * h2) % size para obter o i-ésimo hash da chave.
+ * Two hashes are computed for each key using a single MurmurHash3 128 bit call.
+ * We then use the formula (h1 + i * h2) % size to get the ith hash for the key.
  */
 public class BloomFilter {
 
-    static final int DEFAULT_SIZE = 1 << 20; // Tamanho padrão do filtro de Bloom
+    static final int DEFAULT_SIZE = 1 << 20;
 
-    final int size; // Tamanho do filtro em bits
-    final int hashCount; // Número de funções de hash
-    final long[] bits; // Array de bits para armazenar os valores
+    final int size;
+    final int hashCount;
+    final long[] bits;
 
     /**
-     * Cria um novo filtro de Bloom com o tamanho padrão e uma taxa de falso positivo de 0,1%.
+     * Create a new Bloom filter with the default size and a false positive rate of 0.1%.
      */
     public BloomFilter() {
         this(DEFAULT_SIZE, 0.001);
     }
 
+
     /**
-     * Cria um novo filtro de Bloom com um número esperado de inserções e uma taxa de falso positivo de 0,1%.
+     * Create a new Bloom filter with the given expected insertions and a false positive rate of 0.1%.
      *
-     * @param expectedInsertions Número esperado de inserções.
+     * @param expectedInsertions The number of expected insertions.
      */
     public BloomFilter(int expectedInsertions) {
         this(expectedInsertions, 0.001);
     }
 
+
     /**
-     * Cria um novo filtro de Bloom com o número esperado de inserções e a taxa de falso positivo especificada.
+     * Create a new Bloom filter with the given expected insertions and false positive rate.
      *
-     * @param expectedInsertions Número esperado de inserções.
-     * @param falsePositiveRate  Taxa de falso positivo desejada.
+     * @param expectedInsertions The number of expected insertions.
+     * @param falsePositiveRate  The desired false positive rate.
      */
     public BloomFilter(int expectedInsertions, double falsePositiveRate) {
         this.size = (int) (-expectedInsertions * log(falsePositiveRate) / (log(2) * log(2)));
@@ -56,11 +58,11 @@ public class BloomFilter {
     }
 
     /**
-     * Cria um novo filtro de Bloom a partir dos parâmetros fornecidos.
+     * Create a new Bloom filter from the given parameters.
      *
-     * @param size      Tamanho do filtro de Bloom em bits.
-     * @param hashCount Número de funções de hash.
-     * @param bits      Array de bits armazenados.
+     * @param size      The size of the Bloom filter in bits.
+     * @param hashCount The number of hash functions.
+     * @param bits      The bits of the Bloom filter.
      */
     public BloomFilter(int size, int hashCount, long[] bits) {
         this.size = size;
@@ -69,10 +71,10 @@ public class BloomFilter {
     }
 
     /**
-     * Lê um filtro de Bloom a partir de um arquivo.
+     * Read a Bloom filter from the given file.
      *
-     * @param filename O nome do arquivo a ser lido.
-     * @return O filtro de Bloom lido do arquivo.
+     * @param filename The file to read from.
+     * @return The Bloom filter.
      */
     public static BloomFilter readFromFile(String filename) {
         ExtendedInputStream is = new ExtendedInputStream(filename);
@@ -93,9 +95,9 @@ public class BloomFilter {
     }
 
     /**
-     * Adiciona uma chave ao filtro de Bloom.
+     * Add a key to the Bloom filter.
      *
-     * @param key A chave a ser adicionada.
+     * @param key The key to add.
      */
     public void add(byte[] key) {
         LongLongPair hash = getHash(key);
@@ -108,10 +110,10 @@ public class BloomFilter {
     }
 
     /**
-     * Verifica se o filtro de Bloom pode conter a chave fornecida.
+     * Check if the Bloom filter might contain the given key.
      *
-     * @param key A chave a ser verificada.
-     * @return Verdadeiro se o filtro pode conter a chave, falso caso contrário.
+     * @param key The key to check.
+     * @return True if the Bloom filter might contain the key, false otherwise.
      */
     public boolean mightContain(byte[] key) {
         LongLongPair hash = getHash(key);
@@ -126,27 +128,22 @@ public class BloomFilter {
         return true;
     }
 
-    /**
-     * Calcula os hashes MurmurHash3 128-bit para a chave fornecida.
-     *
-     * @param key A chave a ser processada.
-     * @return Um par contendo os dois valores de hash gerados.
-     */
     private LongLongMutablePair getHash(byte[] key) {
         long[] hashes = MurmurHash3.hash128x64(key, 0, key.length, 0);
         return LongLongMutablePair.of(hashes[0], hashes[1]);
     }
 
     /**
-     * Escreve o filtro de Bloom em um arquivo.
+     * Write the Bloom filter to the given file.
      *
-     * @param filename O nome do arquivo para escrita.
+     * @param filename The file to write to.
      */
     public void writeToFile(String filename) {
         ExtendedOutputStream os = new ExtendedOutputStream(filename);
 
         os.writeVByteInt(size);
         os.writeVByteInt(hashCount);
+
         os.writeVByteInt(bits.length);
 
         for (var b : bits)
@@ -154,4 +151,5 @@ public class BloomFilter {
 
         os.close();
     }
+
 }

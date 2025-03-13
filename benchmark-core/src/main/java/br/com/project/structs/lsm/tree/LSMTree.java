@@ -5,24 +5,29 @@ import br.com.project.structs.lsm.sstable.SSTable;
 import br.com.project.structs.lsm.types.ByteArrayPair;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
+import javax.management.relation.RoleUnresolvedList;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
 /**
- * Implementação de uma LSM Tree.
+ * LSM Tree implementation.
  * <p>
- * Escritas são adicionadas à Memtable, que é descarregada quando atinge um determinado tamanho.
- * SSTables são divididas em níveis, onde cada nível armazena tabelas maiores.
+ * Writes are added to the Memtable, which is flushed when a certain size is reached.
+ * SSTables are divided in levels, each level storing bigger tables.
  * <p>
- * Quando descarregada, uma Memtable se torna uma SSTable no nível 1. Se o nível exceder um limite,
- * todas as suas tabelas são mescladas e adicionadas ao próximo nível.
+ * When flushed, a Memtable becomes an SSTable at level 1, when the level exceeds
+ * a threshold, all its tables are merged and added to the next level.
  * <p>
- * Executores em segundo plano cuidam do descarregamento e da compactação.
+ * Background executors take care of flushing and compaction.
  */
 public class LSMTree {
 
@@ -39,7 +44,7 @@ public class LSMTree {
     final long mutableMemtableMaxSize;
     final int maxLevelZeroSstNumber;
     final long maxLevelZeroSstByteSize;
-    final String dataDir;
+    public final String dataDir;
 
     Memtable mutableMemtable;
     LinkedList<Memtable> immutableMemtables;
@@ -49,23 +54,25 @@ public class LSMTree {
     ScheduledExecutorService tableCompactor;
 
     /**
-     * Cria uma nova LSMTree com um tamanho padrão de memtable e diretório de dados.
+     * Creates a new LSMTree with a default memtable size and data directory.
      */
     public LSMTree() {
         this(DEFAULT_MEMTABLE_MAX_BYTE_SIZE, DEFAULT_LEVEL_ZERO_MAX_SIZE, DEFAULT_DATA_DIRECTORY);
     }
 
     /**
-     * Cria uma nova LSMTree com um tamanho específico de memtable e diretório de dados.
+     * Creates a new LSMTree with a memtable size and data directory.
      *
-     * @param mutableMemtableMaxByteSize O tamanho máximo da memtable antes de ser descarregada para o disco.
-     * @param dataDir                    O diretório onde os dados serão armazenados.
+     * @param mutableMemtableMaxByteSize The maximum size of the memtable before it is flushed to disk.
+     * @param dataDir                    The directory to store the data in.
      */
     public LSMTree(long mutableMemtableMaxByteSize, int maxLevelZeroSstNumber, String dataDir) {
         this.mutableMemtableMaxSize = mutableMemtableMaxByteSize;
         this.maxLevelZeroSstNumber = maxLevelZeroSstNumber;
         this.maxLevelZeroSstByteSize = mutableMemtableMaxByteSize * 2;
-        this.dataDir = dataDir;
+        this.dataDir = Paths.get(System.getProperty("user.dir"),
+                "benchmark-core", "src", "main", "java", "br", "com", "project", "structs", "lsm", "LSM-data"
+        ).toString();
         createDataDir();
 
         mutableMemtable = new Memtable();
@@ -82,10 +89,10 @@ public class LSMTree {
 
 
     /**
-     * Adiciona um item à LSMTree.
-     * Se a memtable estiver cheia, ela é descarregada para o disco.
+     * Adds an item to the LSMTree.
+     * If the memtable is full, it is flushed to disk.
      *
-     * @param item O item a ser adicionado.
+     * @param item The item to add.
      */
     public void add(ByteArrayPair item) {
         synchronized (mutableMemtableLock) {
@@ -95,10 +102,10 @@ public class LSMTree {
     }
 
     /**
-     * Remove um item da LSMTree.
-     * Isso é feito adicionando uma marcação de remoção (tombstone) à memtable.
+     * Removes an item from the LSMTree.
+     * This is done by adding a tombstone to the memtable.
      *
-     * @param key A chave do item a ser removido.
+     * @param key The key of the item to remove.
      */
     public void delete(byte[] key) {
         synchronized (mutableMemtableLock) {
@@ -108,37 +115,46 @@ public class LSMTree {
     }
 
     /**
-     * Obtém um item da LSMTree.
+     * Gets an item from the LSMTree.
      *
-     * @param key A chave do item a ser buscado.
-     * @return O valor do item, ou null se ele não existir.
+     * @param key The key of the item to get.
+     * @return The value of the item, or null if it does not exist.
      */
     public byte[] get(byte[] key) {
         byte[] result;
 
         synchronized (mutableMemtableLock) {
-            if ((result = mutableMemtable.get(key)) != null)
-                return result;
+            result = mutableMemtable.get(key);
+            if (result != null) {
+                return result.length == 0 ? null : result;
+            }
         }
 
         synchronized (immutableMemtablesLock) {
-            for (Memtable memtable : immutableMemtables)
-                if ((result = memtable.get(key)) != null)
-                    return result;
+            for (Memtable memtable : immutableMemtables) {
+                result = memtable.get(key);
+                if (result != null) {
+                    return result.length == 0 ? null : result;
+                }
+            }
         }
 
         synchronized (tableLock) {
-            for (ObjectArrayList<SSTable> level : levels)
-                for (SSTable table : level)
-                    if ((result = table.get(key)) != null)
-                        return result;
+            for (ObjectArrayList<SSTable> level : levels) {
+                for (SSTable table : level) {
+                    result = table.get(key);
+                    if (result != null) {
+                        return result.length == 0 ? null : result;
+                    }
+                }
+            }
         }
 
         return null;
     }
 
     /**
-     * Interrompe as threads em segundo plano.
+     * Stop the background threads.
      */
     public void stop() {
         memtableFlusher.shutdownNow();
@@ -186,20 +202,20 @@ public class LSMTree {
                 ObjectArrayList<SSTable> level = levels.get(i);
 
                 if (level.size() > maxLevelSize) {
-                    // adiciona um novo nível, se necessário
+                    // add new level if needed
                     if (i == n - 1)
                         levels.add(new ObjectArrayList<>());
 
-                    // pega todas as tabelas do nível atual e do próximo nível
+                    // take all tables from the current and next level
                     ObjectArrayList<SSTable> nextLevel = levels.get(i + 1);
                     ObjectArrayList<SSTable> merge = new ObjectArrayList<>();
                     merge.addAll(level);
                     merge.addAll(nextLevel);
 
-                    // executa uma mesclagem ordenada e substitui o próximo nível
+                    // perform a sorted run and replace the next level
                     var sortedRun = SSTable.sortedRun(dataDir, sstMaxSize, merge.toArray(SSTable[]::new));
 
-                    // exclui as tabelas anteriores
+                    // delete previous tables
                     level.forEach(SSTable::closeAndDelete);
                     level.clear();
                     nextLevel.forEach(SSTable::closeAndDelete);
@@ -216,34 +232,32 @@ public class LSMTree {
 
     private void createDataDir() {
         try {
-            Path path = Path.of(dataDir);
-            if (!Files.exists(path)) {
-                Files.createDirectories(path);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Erro ao garantir a criação do diretório de dados: " + dataDir, e);
+            Files.createDirectories(Paths.get(dataDir));
+            System.out.println("[DEBUG] Diretório criado (ou já existia): " + dataDir);
+        } catch (IOException e) {
+            System.err.println("[ERRO] Falha ao criar diretório: " + e.getMessage());
+            e.printStackTrace();
         }
     }
-
 
     @Override
     public String toString() {
 
         var s = new StringBuilder();
-        s.append("Árvore LSM {\n");
+        s.append("LSM-Tree {\n");
         s.append("\tmemtable: ");
         s.append(mutableMemtable.byteSize() / 1024.0 / 1024.0);
-        s.append(" MB\n");
-        s.append("\tmemtables imutáveis: ");
+        s.append(" mb\n");
+        s.append("\timmutable memtables: ");
         s.append(immutableMemtables);
-        s.append("\n\tníveis de SST:\n");
+        s.append("\n\tsst levels:\n");
 
         int i = 0;
         for (var level : levels) {
             s.append(String.format("\t\t- %d: ", i));
             level.stream()
-                    .map(st -> String.format("[ %s, tamanho: %d ] ", st.filename, st.size))
-                    .forEach(s::append);
+                 .map(st -> String.format("[ %s, size: %d ] ", st.filename, st.size))
+                 .forEach(s::append);
             s.append("\n");
             i += 1;
         }
