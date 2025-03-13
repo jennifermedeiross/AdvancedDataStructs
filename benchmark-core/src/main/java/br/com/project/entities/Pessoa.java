@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -61,8 +63,11 @@ public class Pessoa{
     public void setDataNascimento(LocalDate dataNascimento) { this.dataNascimento = dataNascimento; }
 
     @Override
-    public String toString(){
-        return "Nome : " + this.nome + "\nIdade : " + this.idade + "\nCPF : " + this.cpf + "\nTelefone : " + this.telefone;
+    public String toString() {
+        return "Nome : " + this.nome +
+                "\nIdade : " + this.idade +
+                "\nCPF : " + this.cpf +
+                "\nTelefone : " + this.telefone;
     }
 
     @Override
@@ -78,17 +83,26 @@ public class Pessoa{
         return Objects.hashCode(cpf);
     }
 
-    // Conversão para byte[] (Serialização)
-    public byte[] toBytes() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        return objectMapper.writeValueAsBytes(this);
+    public String toJson() {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            return mapper.writeValueAsString(this);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao converter Pessoa para JSON", e);
+        }
     }
 
-    // Conversão de byte[] para Pessoa (Desserialização)
-    public static Pessoa fromBytes(byte[] data) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        return objectMapper.readValue(data, Pessoa.class);
+    public static Pessoa fromJson(String json) {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+
+        try {
+            return mapper.readValue(json, Pessoa.class);
+        } catch (JsonMappingException e) {
+            throw new RuntimeException("Erro ao mapear JSON para Pessoa", e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Erro ao processar JSON para Pessoa", e);
+        }
     }
 }
