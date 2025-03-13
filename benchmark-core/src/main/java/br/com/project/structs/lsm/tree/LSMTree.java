@@ -26,7 +26,7 @@ import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
  */
 public class LSMTree {
 
-    static final long DEFAULT_MEMTABLE_MAX_BYTE_SIZE = 1024 * 1024 * 32;
+    static final long DEFAULT_MEMTABLE_MAX_BYTE_SIZE = 1024 * 1024;
     static final int DEFAULT_LEVEL_ZERO_MAX_SIZE = 2;
     static final double LEVEL_INCR_FACTOR = 1.75;
 

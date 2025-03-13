@@ -1,8 +1,11 @@
 package br.com.project.entities;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class Pessoa{
     private String nome;
@@ -73,5 +76,19 @@ public class Pessoa{
     @Override
     public int hashCode() {
         return Objects.hashCode(cpf);
+    }
+
+    // Conversão para byte[] (Serialização)
+    public byte[] toBytes() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        return objectMapper.writeValueAsBytes(this);
+    }
+
+    // Conversão de byte[] para Pessoa (Desserialização)
+    public static Pessoa fromBytes(byte[] data) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        return objectMapper.readValue(data, Pessoa.class);
     }
 }
