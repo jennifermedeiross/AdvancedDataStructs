@@ -9,7 +9,7 @@ import java.io.*;
 public class Main {
     public static void main(String[] args) throws IOException {
         try {
-            int[] quantidades = new int[]{1000, 5000, 10000};
+            int[] quantidades = new int[]{1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000};
             StructuresController sc = new StructuresController();
             Pessoa[] pessoas;
 
