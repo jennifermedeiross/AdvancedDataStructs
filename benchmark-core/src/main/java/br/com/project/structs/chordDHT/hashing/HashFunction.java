@@ -1,4 +1,4 @@
-package br.com.project.structs.ChordDHT.hashing;
+package br.com.project.structs.chordDHT.hashing;
 
 
 import java.math.BigInteger;
