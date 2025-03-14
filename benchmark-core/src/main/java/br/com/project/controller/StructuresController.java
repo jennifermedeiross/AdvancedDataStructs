@@ -1,7 +1,6 @@
 package br.com.project.controller;
 
 import br.com.project.entities.Pessoa;
-import br.com.project.structs.chordDHT.ChordDHT;
 import br.com.project.structs.lsm.tree.LSMTree;
 import br.com.project.structs.BTree;
 import br.com.project.structs.lsm.types.ByteArrayPair;
@@ -148,7 +147,7 @@ public class StructuresController {
          }
     }
 
-    public void removeTreeMap(Pessoa[] pessoas){
+    public void removeTreeMap(Pessoa[] pessoas) {
         long startTime, endTime, duration;
         for (Pessoa pessoa : pessoas) {
 
@@ -159,5 +158,6 @@ public class StructuresController {
             duration = endTime - startTime;
 
             System.out.println("TreeMap " + (duration) + " " + pessoas.length);
+        }
     }
 }
