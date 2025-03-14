@@ -402,32 +402,4 @@ public class TreeMap<K extends Comparable<K>, V> {
             return node.key;
         }
     }
-
-    // MÉTODOS DE BUSCA , INSERÇÃO E REMOÇÃO PARA A CLASSE PESSOA USANDO A ESTRUTURA DE DADOS TREEMAP IMPLEMENTADA ACIMA.
-
-
-    public void addPessoa(Pessoa pessoa) {
-        if (pessoa == null) throw new IllegalArgumentException("Pessoa não pode ser nula.");
-        root = put(root, pessoa.getCpf(), (V) pessoa);  // A chave é o CPF
-        root.color = BLACK;
-        size++;
-    }
-
-
-    public Pessoa getPessoa(String cpf) {
-        if (cpf == null) throw new IllegalArgumentException("CPF não pode ser nulo.");
-        return (Pessoa) get(root, cpf);
-    }
-
-
-    public void removePessoa(String cpf) {
-        if (cpf == null) throw new IllegalArgumentException("CPF não pode ser nulo.");
-        if (!containsKey(cpf)) return;
-
-        if (!isRed(root.left) && !isRed(root.right))
-            root.color = RED;
-        root = delete(root, cpf);
-        if (root != null) root.color = BLACK;
-        size--;
-    }
 }
