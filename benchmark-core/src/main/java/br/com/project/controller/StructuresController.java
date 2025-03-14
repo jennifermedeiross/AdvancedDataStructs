@@ -3,6 +3,7 @@ package br.com.project.controller;
 import br.com.project.entities.Pessoa;
 import br.com.project.structs.chordDHT.ChordDHT;
 import br.com.project.structs.lsm.tree.LSMTree;
+import br.com.project.structs.BTree;
 import br.com.project.structs.lsm.types.ByteArrayPair;
 
 import java.nio.charset.StandardCharsets;
@@ -10,14 +11,61 @@ import java.util.Random;
 
 public class StructuresController {
     private LSMTree lsmTree;
+    private BTree bTree;
 
     public StructuresController() {
         this.lsmTree = new LSMTree();
+        this.bTree = new BTree(1000);
     }
 
-    private String randomCpf(Pessoa[] pessoas){
+    private String randomCpf(Pessoa[] pessoas) {
         Random rand = new Random();
         return pessoas[rand.nextInt(pessoas.length)].getCpf();
+    }
+
+    public void insereBtree(Pessoa[] pessoas) {
+        long startTime, endTime, duration;
+        for (Pessoa pessoa : pessoas) {
+
+            startTime = System.nanoTime();
+
+            bTree.add(pessoa);
+
+            endTime = System.nanoTime();
+            duration = endTime - startTime;
+
+            System.out.println("Btree " + (duration) + " " + pessoas.length);
+        }
+    }
+
+    public void buscaBtree(Pessoa[] pessoas) {
+        long startTime, endTime, duration;
+        for (Pessoa pessoa : pessoas) {
+
+            startTime = System.nanoTime();
+
+            bTree.search(randomCpf(pessoas));
+
+            endTime = System.nanoTime();
+            duration = endTime - startTime;
+
+            System.out.println("Btree " + (duration) + " " + pessoas.length);
+        }
+    }
+
+    public void removeBtree(Pessoa[] pessoas) {
+        long startTime, endTime, duration;
+        for (Pessoa pessoa : pessoas) {
+
+            startTime = System.nanoTime();
+
+            bTree.delete(randomCpf(pessoas));
+
+            endTime = System.nanoTime();
+            duration = endTime - startTime;
+
+            System.out.println("Btree " + (duration) + " " + pessoas.length);
+        }
     }
 
     public void insereLSM(Pessoa[] pessoas) {
@@ -65,4 +113,5 @@ public class StructuresController {
             System.out.println("LSM " + (duration) + " " + pessoas.length);
         }
     }
+
 }
