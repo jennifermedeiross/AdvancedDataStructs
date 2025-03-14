@@ -5,6 +5,7 @@ import br.com.project.structs.chordDHT.ChordDHT;
 import br.com.project.structs.lsm.tree.LSMTree;
 import br.com.project.structs.BTree;
 import br.com.project.structs.lsm.types.ByteArrayPair;
+import br.com.project.structs.TreeMap;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
@@ -12,10 +13,12 @@ import java.util.Random;
 public class StructuresController {
     private LSMTree lsmTree;
     private BTree bTree;
+    private TreeMap treeMap;
 
     public StructuresController() {
         this.lsmTree = new LSMTree();
         this.bTree = new BTree(1000);
+        this.treeMap = new TreeMap<String, Pessoa>();
     }
 
     private String randomCpf(Pessoa[] pessoas) {
@@ -114,4 +117,47 @@ public class StructuresController {
         }
     }
 
+    public void insereTreeMap(Pessoa[] pessoas){
+        long startTime, endTime, duration;
+        for (Pessoa pessoa : pessoas) {
+
+            startTime = System.nanoTime();
+
+            treeMap.put(pessoa.getCpf(),pessoa);
+            endTime = System.nanoTime();
+            duration = endTime - startTime;
+
+            System.out.println("TreeMap " + (duration) + " " + pessoas.length);
+
+        }
+
+    }
+
+    public void buscaTreeMap(Pessoa[] pessoas){
+        long startTime, endTime, duration;
+        for (Pessoa pessoa : pessoas) {
+
+            startTime = System.nanoTime();
+            treeMap.get(randomCpf(pessoas));
+
+            endTime = System.nanoTime();
+            duration = endTime - startTime;
+
+            System.out.println("TreeMap " + (duration) + " " + pessoas.length);
+
+         }
+    }
+
+    public void removeTreeMap(Pessoa[] pessoas){
+        long startTime, endTime, duration;
+        for (Pessoa pessoa : pessoas) {
+
+            startTime = System.nanoTime();
+            treeMap.delete(randomCpf(pessoas));
+
+            endTime = System.nanoTime();
+            duration = endTime - startTime;
+
+            System.out.println("TreeMap " + (duration) + " " + pessoas.length);
+    }
 }
