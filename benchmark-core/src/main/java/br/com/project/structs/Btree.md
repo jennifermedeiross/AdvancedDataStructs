@@ -58,20 +58,94 @@ A operação de busca percorre a árvore da raiz até as folhas, buscando por um
 
 A inserção em uma B-árvore ocorre da seguinte forma:
 
-1. **Descida até o nó folha**: A chave é inserida em um nó folha.
-2. **Divisão de nós**: Se o nó folha estiver cheio, ele é dividido em dois nós. A chave mediana é promovida para o nó pai.
-3. **Divisão recursiva**: Caso o nó pai também esteja cheio, ele é dividido, e o processo se repete até que a árvore seja balanceada.
+1. **Descida até o nó folha**: A inserção em uma B-árvore começa com a **descida até o nó folha** onde a chave será inserida. A ideia é encontrar o local apropriado para a nova chave, mantendo a propriedade de ordenação dos nós.
 
-A inserção tem um tempo de execução **O(h)**, onde h é a altura da árvore.
+#### Passos do processo:
+- **Início pela raiz**: A busca começa na raiz da árvore.
+- **Comparação das chaves**: A chave a ser inserida é comparada com as chaves nos nós. Dependendo da chave, o algoritmo decide qual ponteiro filho seguir.
+  - Se a chave a ser inserida for menor que a primeira chave de um nó, segue-se o primeiro ponteiro filho.
+  - Se for maior que a primeira chave, mas menor que a segunda, segue-se o segundo ponteiro filho, e assim por diante.
+- **Continuação até um nó folha**: Esse processo de comparação e descida é repetido até se chegar a um **nó folha**, onde a chave será inserida.
+
+A descida até o nó folha garante que a árvore se mantém balanceada durante a inserção, já que estamos sempre navegando por um caminho específico para a chave desejada.
+
+#### Exemplo:
+Em uma árvore com os nós [10, 20, 30] e [40, 50, 60], ao tentar inserir a chave 25, o algoritmo começa pela raiz e segue o ponteiro para o nó [20, 30], pois 25 está entre 20 e 30. O próximo passo é inserir a chave 25 nesse nó folha.
+
+---
+2. **Divisão de nós**: Quando o **nó folha** é encontrado, a próxima etapa é inserir a chave no local apropriado dentro do nó. A chave deve ser inserida de forma que as chaves dentro do nó permaneçam ordenadas.
+
+#### Passos do processo:
+- **Posicionamento da chave**: A chave a ser inserida é colocada na posição correta no nó, mantendo a ordem crescente das chaves dentro dele.
+- **Verificação do espaço**: Se o nó tiver espaço suficiente (menos que 2t-1 chaves, onde t é o grau mínimo da árvore), a inserção é concluída aqui. Não é necessário fazer mais alterações.
+
+A operação de inserção é simples quando o nó tem espaço suficiente para a nova chave. Nesse caso, a complexidade da operação é \( O(h) \), onde \( h \) é a altura da árvore, pois a operação de descida até o nó folha leva tempo logarítmico.
+
+#### Exemplo:
+Em um nó [10, 20, 30], se quisermos inserir a chave 25, a chave será colocada entre 20 e 30, resultando no nó [10, 20, 25, 30].
+
+---
+3. **Divisão recursiva**: Se o nó folha já estiver **cheio** (contendo 2t-1 chaves), ele precisa ser **dividido** para acomodar a nova chave. Esse é o processo mais complexo da inserção em B-árvores e garante que a árvore permaneça balanceada.
+
+#### Passos do processo:
+- **Divisão do nó**: Quando um nó folha está cheio e uma nova chave precisa ser inserida, o nó é dividido em dois nós. O nó é dividido ao meio, e a chave do meio é **promovida** para o nó pai.
+  - O nó original será dividido em dois, cada um contendo \( t-1 \) chaves.
+  - A chave mediana do nó será promovida ao nó pai, e essa chave divide os dois novos nós criados.
+  
+- **Ajuste no nó pai**: A chave promovida ao nó pai pode causar um **desbalanceamento** no nó pai, fazendo com que ele também precise ser dividido. Se o nó pai também estiver cheio, o processo de divisão será recursivo, propagando-se para cima da árvore.
+
+Esse processo de divisão e promoção de chaves pode se repetir até que a raiz da árvore seja dividida, aumentando a altura da árvore.
+
+#### Exemplo:
+Suponha que temos um nó folha com as chaves [10, 20, 30, 40, 50]. Se a chave 25 for inserida, o nó será dividido em dois nós:
+- Nó 1: [10, 20]
+- Nó 2: [30, 40, 50]
+
+A chave mediana (25) será promovida para o nó pai. Se o nó pai também estiver cheio, o processo se repete até que a árvore seja ajustada.
+
+---
 
 ### Remoção (B-TREE-DELETE)
 
 A remoção de uma chave em uma B-árvore é mais complexa, pois pode exigir ajustes nos nós para garantir que as propriedades da árvore sejam mantidas:
 
-1. **Remover de um nó folha**: Se a chave estiver em um nó folha, ela pode ser removida diretamente.
-2. **Balanceamento**: Se a remoção de uma chave diminuir o número de chaves de um nó abaixo do mínimo permitido, o nó será "balanceado", ou seja, ele pode pegar uma chave de um irmão adjacente ou combinar-se com ele.
-3. **Propagação do Balanceamento**: Em alguns casos, o balanceamento pode se propagar para cima, o que pode exigir divisões e ajustes em nós acima.
+1. **Remover de um nó folha**:Quando a chave a ser removida está localizada em um **nó folha**, o processo de remoção é relativamente simples. O nó folha já é uma folha da árvore, ou seja, não possui filhos, o que significa que a remoção da chave não afetará o balanceamento da árvore de maneira significativa.
 
+#### Passos do processo:
+- **Identificação da chave**: O algoritmo começa percorrendo a árvore até o nó folha que contém a chave a ser removida.
+- **Remoção direta**: Uma vez que o nó folha é encontrado, a chave é simplesmente removida da lista de chaves armazenadas nesse nó. Após a remoção, o número de chaves no nó é reduzido.
+
+Este processo é simples e rápido, com complexidade de tempo \( O(h) \), onde \( h \) é a altura da árvore, pois a operação envolve apenas uma descida até o nó folha e a remoção da chave.
+
+#### Exemplo:
+Se um nó folha contém as chaves `[10, 20, 30]` e a chave 20 deve ser removida, o nó se tornará `[10, 30]` após a remoção. Nenhuma reorganização dos nós é necessária.
+
+---
+
+2. **Balanceamento**: Após a remoção de uma chave, o número de chaves no nó pode cair abaixo do **mínimo permitido** (t-1 chaves para nós internos). Isso pode violar a propriedade de balanceamento da B-árvore, que exige que cada nó tenha pelo menos t-1 chaves. Para garantir que a árvore continue balanceada, é necessário realizar ajustes no nó ou em seus vizinhos.
+
+#### Possíveis soluções de balanceamento:
+- **Emprestar uma chave do irmão adjacente**: Se o nó possui um irmão adjacente (esquerda ou direita) que possui mais do que o número mínimo de chaves (ou seja, mais de t-1 chaves), uma chave pode ser emprestada desse irmão. A chave emprestada será movida para o nó que perdeu a chave, e uma chave do pai será movida para o irmão.
+  
+- **Combinando dois nós**: Caso os irmãos adjacentes também tenham apenas t-1 chaves, o nó será combinado com um dos irmãos. Isso ocorre da seguinte maneira:
+  1. O nó que perdeu a chave se funde com seu irmão adjacente.
+  2. A chave do nó pai, que separa os dois filhos, é promovida para dentro do nó recém-combinado.
+  3. Se o nó pai também estiver com o número de chaves abaixo do mínimo, o processo de balanceamento é recursivo e se propaga para cima na árvore.
+
+Essas operações garantem que a árvore permaneça balanceada após a remoção, mantendo a propriedade de que todos os nós internos têm entre t-1 e 2t-1 chaves, e a altura da árvore é minimizada.
+
+---
+
+3. **Propagação do Balanceamento**:Se, após o balanceamento de um nó, o nó pai também ficar abaixo do número mínimo de chaves (t-1), o processo de balanceamento pode precisar se propagar para cima da árvore. Isso ocorre porque a remoção de uma chave pode afetar o número de chaves do nó pai, especialmente quando uma chave foi promovida do nó filho para o pai, ou quando um nó é combinado com seu irmão.
+
+#### Processo de propagação:
+- **Rebalanceamento no nó pai**: Se o nó pai perder uma chave ao promover uma chave para o nó anterior, ele pode precisar de mais balanceamento. Se o nó pai também tiver menos de t-1 chaves, o processo de balanceamento será repetido.
+- **Cascata de divisões e combinações**: Se o balanceamento se propagar para cima e alcançar a raiz da árvore, ela também pode ser dividida ou combinada, o que pode até reduzir a altura da árvore.
+
+Esses ajustes garantem que a B-árvore permaneça balanceada, com cada nó mantendo a quantidade de chaves dentro dos limites permitidos. Se necessário, uma nova raiz pode ser criada ou a altura da árvore pode ser reduzida.
+
+#### Exemplo:
+Suponha que a remoção de uma chave de um nó folha tenha causado um desequilíbrio no nó pai. Se o nó pai tiver agora t-1 chaves, ele pode pegar uma chave de um irmão ou se combinar com ele. Se isso ocorrer, e o pai também ficar desequilibrado, o processo de balanceamento se propaga até a raiz, ajustando a estrutura conforme necessário.
 ### Criação de uma B-Árvore (B-TREE-CREATE)
 
 A criação de uma B-árvore começa com a inicialização de uma árvore vazia e a inserção das chaves, uma a uma, usando a operação de inserção mencionada.
