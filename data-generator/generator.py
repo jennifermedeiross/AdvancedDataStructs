@@ -1,6 +1,7 @@
 import json
 from datetime import date
 from faker import Faker
+from pathlib import Path
 
 fake = Faker("pt_BR")
 
@@ -31,7 +32,7 @@ def gera_dados():
     }
     return pessoa
 
-def salvar_dados(quantidade=50, arquivo_nome="dados.json"):
+def salvar_dados(quantidade=50):
     """
     Gera e salva um conjunto de dados fictícios em um arquivo JSON.
 
@@ -42,10 +43,11 @@ def salvar_dados(quantidade=50, arquivo_nome="dados.json"):
     Retorna:
         None: Os dados são salvos diretamente no arquivo JSON.
     """
+    current_dir = Path(__file__).resolve().parent
+    arquivo_nome = current_dir.parents[0] / "benchmark-core/src/main/java/br/com/project/data/dados.json"
     dados = [gera_dados() for _ in range(quantidade)]
-
     with open(arquivo_nome, "w", encoding="utf-8") as arquivo:
         json.dump(dados, arquivo, indent=4, ensure_ascii=False)
 
 # Gera e salva os dados fictícios
-salvar_dados()
+salvar_dados() 

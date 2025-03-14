@@ -22,7 +22,8 @@ public class LeitorDeDados {
      */
     public static <T> T readJson(Class<T> classReturn) throws IOException {
         String currentDir = Paths.get("").toAbsolutePath().toString();
-        File filePath = new File(currentDir + "/data-generator/dados.json");
+        System.err.println(currentDir);
+        File filePath = new File(currentDir + "/benchmark-core/src/main/java/br/com/project/data/dados.json");
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
