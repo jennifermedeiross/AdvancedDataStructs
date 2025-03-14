@@ -1,9 +1,0 @@
-estrutura time amostra
-Btree 1 1000
-Btree 50 10000
-Btree 100 50000
-Btree 990 100000
-Lsm 1 1000
-Lsm 10 10000
-Lsm 150 50000
-Lsm 1010 100000
