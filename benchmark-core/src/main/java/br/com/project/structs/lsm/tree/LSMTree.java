@@ -12,7 +12,6 @@ import java.util.LinkedList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
 /**
@@ -241,7 +240,6 @@ public class LSMTree {
     private void createDataDir() {
         try {
             Files.createDirectories(Paths.get(dataDir));
-            System.out.println("[DEBUG] Diretório criado (ou já existia): " + dataDir);
         } catch (IOException e) {
             System.err.println("[ERRO] Falha ao criar diretório: " + e.getMessage());
             e.printStackTrace();

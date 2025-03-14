@@ -32,7 +32,7 @@ def gera_dados():
     }
     return pessoa
 
-def salvar_dados(quantidade=50):
+def salvar_dados(quantidade=1000):
     """
     Gera e salva um conjunto de dados fictícios em um arquivo JSON.
 
@@ -44,10 +44,12 @@ def salvar_dados(quantidade=50):
         None: Os dados são salvos diretamente no arquivo JSON.
     """
     current_dir = Path(__file__).resolve().parent
-    arquivo_nome = current_dir.parents[0] / "benchmark-core/src/main/java/br/com/project/data/dados.json"
+    arquivo_nome = current_dir.parents[0] / f"benchmark-core/src/main/java/br/com/project/data/dados-{quantidade}.json"
     dados = [gera_dados() for _ in range(quantidade)]
     with open(arquivo_nome, "w", encoding="utf-8") as arquivo:
         json.dump(dados, arquivo, indent=4, ensure_ascii=False)
 
 # Gera e salva os dados fictícios
-salvar_dados() 
+quantidade = [1000, 5000, 10000, 25000, 50000, 100000, 500000, 100000000]
+for i in range(8):
+    salvar_dados(quantidade[i])
