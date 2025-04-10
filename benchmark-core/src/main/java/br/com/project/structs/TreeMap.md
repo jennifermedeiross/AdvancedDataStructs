@@ -32,7 +32,7 @@ Para garantir o balanceamento, a árvore segue estas regras:
 **Casos** de inserção que podem ou não precisar de rebalanceamento:
 
 1. O nó inserido é a raiz
-    - Solução: Pintar o nó de preto, pois a raiz sempre deve ser preta.  
+    - Solução: Pintar o nó de preto, pois a raiz sempre deve ser preta.
 2. O pai do nó inserido é preto
     - Não há violação, á árvore continua válida, uma vez que todo novo nó é vermelho
 3. O pai e o tio são vermelhos
@@ -42,8 +42,8 @@ Para garantir o balanceamento, a árvore segue estas regras:
         - Solução: rotação simples(para direita ou para esquerda) no nó avô + troca de cores entre pai e avô.
     * Configuração LR ou RL (nó inserido está desalinhado)
         - Solução: rotação dupla (rotação no pai + rotação no avô) + ajuste de cores.
-       
-    
+
+
 ### 🔹 Busca (`get`)
 - A busca segue as comparações padrão de uma árvore binária de busca.
 - Retorna o valor associado à chave ou `null` se a chave não existir.
@@ -75,7 +75,7 @@ Para garantir o balanceamento, a árvore segue estas regras:
 - **`flipColors`**: Troca as cores dos nós para manter as propriedades da árvore.
 - **Ajustes de cores**: Garantem que não haja dois nós vermelhos consecutivos.
 
-##  Benefícios    
+##  Benefícios
 - **É uma estrutura de dados muito eficiênte**:
     - Inserção (`put`): **O(log N)**
     - Busca (`get`): **O(log N)**
