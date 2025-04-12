@@ -69,6 +69,9 @@ public class BtreeTest {
         bTree.add(p3);
         bTree.add(p4);
 
+        assertNotNull(bTree.search("11111111111"));
+        bTree.delete("11111111111");
+        assertNull(bTree.search("11111111111"));
         assertNotNull(bTree.search("33333333333"));
         bTree.delete("33333333333");
         assertNull(bTree.search("33333333333"));
