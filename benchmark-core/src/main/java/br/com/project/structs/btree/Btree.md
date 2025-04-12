@@ -85,9 +85,9 @@ A operação de inserção é simples quando o nó tem espaço suficiente para a
 #### Exemplo:
 Em um nó [10, 20, 30], se quisermos inserir a chave 25, a chave será colocada entre 20 e 30, resultando no nó [10, 20, 25, 30].
 
-![Inserção1](./insercao1.png)
+![Inserção1](./assets/insercao1.png)
 
-![Inserção2](./insercao2.png)
+![Inserção2](./assets/insercao2.png)
 
 
 ---
@@ -105,7 +105,7 @@ Esse processo de divisão e promoção de chaves pode se repetir até que a raiz
 #### Exemplo:
 Suponha que temos um nó folha com as chaves [10, 20, 30, 40, 50]. 
 
-![Inserção3](./insercao3.png)
+![Inserção3](./assets/insercao3.png)
 
 Se a chave 25 for inserida, o nó será dividido em dois nós:
 - Nó 1: [10, 20]
@@ -113,7 +113,7 @@ Se a chave 25 for inserida, o nó será dividido em dois nós:
 
 A chave mediana (25) será promovida para o nó pai. Se o nó pai também estiver cheio, o processo se repete até que a árvore seja ajustada.
 
-![Inserção4](./insercao4.png)
+![Inserção4](./assets/insercao4.png)
 
 ---
 
@@ -132,9 +132,9 @@ Este processo é simples e rápido, com complexidade de tempo \( O(h) \), onde \
 #### Exemplo:
 Se um nó folha contém as chaves `[10, 20, 30]` e a chave 20 deve ser removida, o nó se tornará `[10, 30]` após a remoção. Nenhuma reorganização dos nós é necessária.
 
-![Delecao1](./delecao1.png)
+![Delecao1](./assets/delecao1.png)
 
-![Delecao2](./delecao2.png)
+![Delecao2](./assets/delecao2.png)
 
 
 
@@ -149,11 +149,11 @@ Se um nó folha contém as chaves `[10, 20, 30]` e a chave 20 deve ser removida,
 #### Exemplo:
 Temos os nós folhas `[10, 20, 30, 35]`, `[50 ,55]`, `[70, 100, 103]` e o nó pai `[40, 60]`. 
 
-![Delecao5](./delecao5.png)
+![Delecao5](./assets/delecao5.png)
 
 Ao remover a chave 55 teremos nós folhas `[10, 20, 30]`, `[40, 50]`, `[70, 100, 103]` e o nó pai `[35, 60]`.
 
-![Delecao6](./delecao6.png)
+![Delecao6](./assets/delecao6.png)
 
 
   
@@ -165,11 +165,11 @@ Ao remover a chave 55 teremos nós folhas `[10, 20, 30]`, `[40, 50]`, `[70, 100,
 Essas operações garantem que a árvore permaneça balanceada após a remoção, mantendo a propriedade de que todos os nós internos têm entre t-1 e 2t-1 chaves, e a altura da árvore é minimizada.
 
 #### Exemplo: 
-Ao remover a chave 5 o nó `[1, 2]` se une com a chave 4, a chave 3 do nó pai que separava os dois nós se une ao novo nó formado, mas o pai fere o número de chaves mínimas e o processo é repetido recursivamente juntando `[6]` com a cahve 30 o nó `[9]` se junta e a chave 30 assume a posição de nó pai.
+Ao remover a chave 5 o nó `[1, 2]` se une com a chave 4, a chave 3 do nó pai que separava os dois nós se une ao novo nó formado, mas o pai fere o número de chaves mínimas e o processo é repetido recursivamente juntando `[6]` com a chave 30 o nó `[9]` se junta e a chave 30 assume a posição de nó pai.
 
-![Deleção7](./delecao7.png)
+![Deleção7](./assets/delecao7.png)
 
-![Deleção8](./delecao8.png)
+![Deleção8](./assets/delecao8.png)
 
 
 ---
