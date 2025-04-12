@@ -1,4 +1,4 @@
-# TreeMap<K extends Comparable<K>, V>
+# TreeMap
 
 A classe `TreeMap<K extends Comparable<K>, V>` é uma implementação de uma árvore binária de busca balanceada, mais especificamente uma **árvore Rubro-Negra**, onde as chaves são mantidas em ordem crescente. O balanceamento é garantido através de restrições adicionais, assegurando que operações como inserção, remoção e busca sejam eficientes.
 
@@ -52,13 +52,13 @@ Para garantir o balanceamento, a árvore segue estas regras:
 - Remove um nó e rebalanceia a árvore para manter as propriedades Rubro-Negras.
 - Envolve substituições de nós e ajustes de cores.
 
-* A remoção se torna mais coplexa quando removemos um nó preto pois ele pode causar um desiquilibrio na altura preta da árvore, os casos de correção são:
+* A remoção se torna mais coplexa quando removemos um nó preto, pois ele pode causar um desiquilibrio na altura preta da árvore, os casos de correção são:
 
     1. O irmão do nó removido é vermelho
         - Solução: Rotaciona o pai, troca as cores do pai e do irmão e trata o problema novamente.
     2. O irmão do nó removido é preto e ambos os seus filhos são pretos
         - Solução: Recolore o irmão para vermelho e propaga o problema para cima (para o pai do nó removido).
-    3. irmão é preto, o filho mais próximo do irmão é vermelho, e o mais distante é preto
+    3. Irmão é preto, o filho mais próximo do irmão é vermelho, e o mais distante é preto
         - Solução: Rotaciona o irmão, troca as cores do irmão e do seu filho, e trata como o Caso 4.
     4. O irmão é preto e o filho mais distante do irmão é vermelho
         - Solução: Rotaciona o pai, ajusta as cores (pai e irmão trocam de cor, e o filho distante do irmão vira preto).
@@ -70,22 +70,25 @@ Para garantir o balanceamento, a árvore segue estas regras:
 ### 🔹 Iteração (`keys`, `values`, `KeyIterator`)
 - Permite percorrer as chaves e valores em **ordem crescente**.
 
-##  Métodos Auxiliares
+## Métodos Auxiliares
 - **`rotateLeft` / `rotateRight`**: Realizam rotações para corrigir desbalanceamentos.
 - **`flipColors`**: Troca as cores dos nós para manter as propriedades da árvore.
-- **Ajustes de cores**: Garantem que não haja dois nós vermelhos consecutivos.
+- **`Ajustes de cores`**: Garantem que não haja dois nós vermelhos consecutivos.
 
-##  Benefícios
+## Benefícios
 - **É uma estrutura de dados muito eficiênte**:
     - Inserção (`put`): **O(log N)**
     - Busca (`get`): **O(log N)**
     - Remoção (`delete`): **O(log N)**
 - **Balanceamento automático**: A árvore se rebalanceia dinamicamente após inserções/remoções.
 
-##  Conclusão
+## Conclusão
 A implementação do `TreeMap` usando uma **árvore Rubro-Negra** oferece um ótimo equilíbrio entre **eficiência** e **simplicidade**. É ideal para cenários onde é necessário:
 - Manter chaves **ordenadas**.
 - Garantir operações rápidas (**O(log N)**) mesmo com grandes volumes de dados.
 - Evitar desbalanceamentos que degradariam o desempenho.
+
+## Referências
+- **Livro**: Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C. (2009). **Algoritmos: Teoria e Prática**. Capítulo 13
 
 ---
