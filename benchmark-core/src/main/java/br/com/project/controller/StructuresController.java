@@ -2,7 +2,7 @@ package br.com.project.controller;
 
 import br.com.project.entities.Pessoa;
 import br.com.project.structs.lsm.tree.LSMTree;
-import br.com.project.structs.BTree;
+import br.com.project.structs.btree.*;
 import br.com.project.structs.lsm.types.ByteArrayPair;
 import br.com.project.structs.TreeMap;
 
