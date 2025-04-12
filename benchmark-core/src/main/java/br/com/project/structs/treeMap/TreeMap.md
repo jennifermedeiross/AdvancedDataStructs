@@ -41,36 +41,39 @@ Para garantir o balanceamento, a árvore segue estas regras:
     - Solução: recolore o pai e o tio para preto e o avô para vermelho e verifica se o avô começou a ferir alguma regra.
       #### Exemplo:
       Situação: Inserir 15 numa árvore com raiz 10 e filhos 5 e 20(vermelhos).
-      ![Caso3.1](./assets/caso3.1.png)
+      ![Caso3.1](./assets/insercao/caso3.1.png)
+   
       Passo 1: Inserir o 15
-      ![Caso3.2](./assets/caso3.2.png)
+      ![Caso3.2](./assets/insercao/caso3.2.png)
+   
       Passo 2: Pai(20) e tio(5) são vermelhos. Recolore
-      ![Caso3.3](./assets/caso3.3.png) 
+      ![Caso3.3](./assets/insercao/caso3.3.png)
+   
       Passo 3: Como a raiz está vermelha recolore
-      ![Caso3.4](./assets/caso3.4.png)
+      ![Caso3.4](./assets/insercao/caso3.4.png)
    
 4. O pai é vermelho e o tio é preto (temos dois subcasos nessa situação)
     * Configuração LL ou RR (nó inserido, nó pai e nó avô estão alinhados) - primeira letra se refere a posição do pai em relação ao avô e a segunda ao nó inserido em relação ao pai.
         - Solução: Rotação simples(para direita ou para esquerda) no nó avô + troca de cores entre pai e avô.
           #### Exemplo:
           Situação RR: Inserir 25 numa árvore com raiz 10 e filho 20
-          ![4A.1](./assets/4A.1.png)
+          ![4A.1](./assets/insercao/4A.1.png)
           Passo 1: Inserir 25
-          ![4A.2](./assets/4A.2.png)
+          ![4A.2](./assets/insercao/4A.2.png)
           Passo 2: Rotação à esquerda no avô(10) e troca de corer entre pai(20) e avô(10)
-          ![4A.3](./assets/4A.2.png)  
+          ![4A.3](./assets/insercao/4A.2.png)  
       
     * Configuração LR ou RL (nó inserido está desalinhado)
         - Solução: rotação dupla (rotação no pai + rotação no avô) + ajuste de cores.
           #### Exemplo:
           Situação LR: Inserir 15 numa árvore com raiz 10 e filho 20
-          ![4B.1](./assets/4B.1.png)
+          ![4B.1](./assets/insercao/4B.1.png)
           Passo 1: Inserir 15
-          ![4B.2](./assets/4B.2.png)  
+          ![4B.2](./assets/insercao/4B.2.png)  
           Passo 2: Rotação à direita no pai(20)
-          ![4B.3](./assets/4B.3.png)
+          ![4B.3](./assets/insercao/4B.3.png)
           Passo 3: Rotação à esquerda no avô(10) e ajuste de cores 15 torna-se preto, 10 e 20 vermelhos
-          ![4B.4](./assets/4B.4.png)
+          ![4B.4](./assets/insercao/4B.4.png)
       
 ### 🔹 Busca (`get`)
 - A busca segue as comparações padrão de uma árvore binária de busca.
