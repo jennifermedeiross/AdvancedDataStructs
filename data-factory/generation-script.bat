@@ -8,4 +8,4 @@ if not exist "%VENV_DIR%" (
     )
 )
 
-%VENV_DIR%\Scripts\python.exe generator.py
+%VENV_DIR%\Scripts\python.exe data_generator.py
