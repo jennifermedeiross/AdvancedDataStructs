@@ -1,23 +1,23 @@
-package br.com.project.structs.lsm.bloom;
+package br.com.project.structs.lsm.sstable;
 
 import br.com.project.structs.lsm.io.ExtendedInputStream;
 import br.com.project.structs.lsm.io.ExtendedOutputStream;
+import lombok.Getter;
 
 import static java.lang.Math.ceil;
 import static java.lang.Math.log;
 
 /**
  * Implementação simples de um filtro de Bloom.
- * <p>
  * Dado o número esperado de inserções e a taxa de falsos positivos desejada,
  * o tamanho do filtro é calculado e o número de funções de hash é calculado com base na taxa de falsos positivos.
- * <p>
  * O filtro usa duas funções de hash simples para cada chave.
  */
 public class BloomFilter {
 
     static final int DEFAULT_SIZE = 1 << 20; // 1MB
     final int size;
+    @Getter
     final int hashCount;
     final long[] bits;
 
@@ -135,4 +135,9 @@ public class BloomFilter {
 
         os.close();
     }
+
+    public int size() {
+        return size;
+    }
+
 }
