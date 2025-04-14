@@ -13,4 +13,4 @@ else
     source "$VENV_DIR/bin/activate"
 fi
 
-$PYTHON generator.py
+$PYTHON data_generator.py
