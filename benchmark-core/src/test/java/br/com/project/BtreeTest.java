@@ -4,7 +4,6 @@ import br.com.project.entities.Pessoa;
 import br.com.project.structs.btree.BTree;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BtreeTest {
