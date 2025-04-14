@@ -8,8 +8,8 @@ import java.io.IOException;
 
 /**
  * Esta classe utiliza um FastBufferedInputStream como base e adiciona
- * métodos utilitários a ele, principalmente para a leitura de inteiros e longos
- * codificados em bytes variáveis.
+ * métodos utilitários a ele, principalmente para a leitura de inteiros e longs
+ * codificados em bytes.
  */
 public class ExtendedInputStream {
 
@@ -30,7 +30,7 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Lê um inteiro codificado em bytes variáveis do fluxo. Veja readVByteLong().
+     * Lê um inteiro codificado em bytes do fluxo.
      *
      * @return o próximo inteiro V-Byte.
      */
@@ -39,15 +39,12 @@ public class ExtendedInputStream {
     }
 
     /**
-     * Lê um long codificado em bytes variáveis do fluxo.
-     * <p>
-     * Um long codificado em bytes variáveis é escrito como:
-     * <tt>|bit de continuação| 7 bits de carga útil|</tt>
-     * <p>
-     * Por exemplo, suponha que o CPF de uma instância da classe Pessoa seja "123.456.789-01".
+     * Lê um long codificado em bytes do fluxo.
+     * Um long codificado em bytes é escrito como:
+     * |bit de continuação| 7 bits de carga útil|
+     * Por exemplo, suponha que o CPF de uma instância de uma classe Pessoa seja "123.456.789-01".
      * Para armazená-lo como um número, pode-se convertê-lo para um valor longo, removendo os separadores,
-     * resultando em 12345678901. Esse valor será representado no fluxo utilizando bytes variáveis da seguinte forma:
-     * <p>
+     * resultando em 12345678901. Esse valor será representado no fluxo utilizando bytes da seguinte forma:
      * |1|0110110|1|1100101|0|0010110| ...
      *
      * @return o próximo long V-Byte.
@@ -115,7 +112,6 @@ public class ExtendedInputStream {
 
     /**
      * Lê um ByteArrayPair do fluxo.
-     * <p>
      * Cada array é codificado como tamanho, seguido do conteúdo.
      *
      * @return o próximo item no fluxo.
