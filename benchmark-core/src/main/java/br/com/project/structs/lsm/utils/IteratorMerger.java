@@ -9,13 +9,11 @@ import java.util.Iterator;
 import static java.util.Comparator.comparing;
 
 /**
- * Mescla múltiplos Iterators ordenados em um único Iterator ordenado.
- * <p>
- * A complexidade de tempo para ler um único elemento é O(log n), onde n é o número de Iterators.
- * <p>
- * Chamadas ao método {@code next()} após o último elemento do último Iterator retornarão {@code null}.
+ * Combina vários iteradores ordenados em um único iterador também ordenado.
+ * A complexidade para acessar um único elemento é O(log n), sendo n o número de iteradores.
+ * Depois que todos os elementos dos iteradores forem processados, chamadas subsequentes ao método {@code next()} retornarão {@code null}.
  *
- * @param <T> O tipo dos elementos contidos nos Iterators.
+ * @param <T> O tipo dos itens armazenados nos iteradores.
  */
 public class IteratorMerger<T extends Comparable<T>> implements Iterator<T> {
 
