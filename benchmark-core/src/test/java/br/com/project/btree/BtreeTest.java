@@ -1,4 +1,4 @@
-package br.com.project;
+package br.com.project.btree;
 
 import br.com.project.entities.Pessoa;
 import br.com.project.structs.btree.BTree;
