@@ -1,10 +1,10 @@
 package br.com.project.structs.lsm.utils;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * Ignora duplicatas em um Iterator ordenado, mantendo apenas o primeiro elemento de cada valor repetido.
- * <p>
  * Chamadas ao método {@code next()} após o último elemento do último Iterator retornarão {@code null}.
  *
  * @param <T> O tipo dos elementos contidos nos Iterators.
@@ -12,28 +12,39 @@ import java.util.Iterator;
 public class UniqueSortedIterator<T extends Comparable<T>> implements Iterator<T> {
 
     Iterator<T> iterator;
-    private T last;
+    private T next;
+    private T lastReturned;
 
     public UniqueSortedIterator(Iterator<T> iterator) {
         this.iterator = iterator;
-        last = iterator.next();
+        advance();
     }
 
     @Override
     public boolean hasNext() {
-        return last != null;
+        return next != null;
     }
 
     @Override
     public T next() {
-        T next = iterator.next();
-        while (next != null && last.compareTo(next) == 0)
-            next = iterator.next();
+        if (next == null) {
+            throw new NoSuchElementException("Nenhum elemento restante na iteração.");
+        }
 
-        T toReturn = last;
-        last = next;
+        lastReturned = next;
+        advance();
+        return lastReturned;
+    }
 
-        return toReturn;
+    private void advance() {
+        next = null;
+        while (iterator.hasNext()) {
+            T candidate = iterator.next();
+            if (lastReturned == null || lastReturned.compareTo(candidate) != 0) {
+                next = candidate;
+                break;
+            }
+        }
     }
 
 }
