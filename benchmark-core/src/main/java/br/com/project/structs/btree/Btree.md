@@ -85,9 +85,8 @@ A operação de inserção é simples quando o nó tem espaço suficiente para a
 #### Exemplo:
 Em um nó [10, 20, 30], se quisermos inserir a chave 25, a chave será colocada entre 20 e 30, resultando no nó [10, 20, 25, 30].
 
-![Inserção1](./assets/insercao1.png)
-
-![Inserção2](./assets/insercao2.png)
+| ![Inserção1](./assets/insercao1.png) | ➡️ | ![Inserção2](./assets/insercao2.png) |
+|:------------------------------:|:--:|:----------------------------:|
 
 
 ---
@@ -131,10 +130,9 @@ Este processo é simples e rápido, com complexidade de tempo \( O(h) \), onde \
 
 #### Exemplo:
 Se um nó folha contém as chaves `[10, 20, 30]` e a chave 20 deve ser removida, o nó se tornará `[10, 30]` após a remoção. Nenhuma reorganização dos nós é necessária.
+| ![IDelecao1](./assets/delecao1.png) | ➡️ | ![Delecao2](./assets/delecao2.png) |
+|:------------------------------:|:--:|:----------------------------:|
 
-![Delecao1](./assets/delecao1.png)
-
-![Delecao2](./assets/delecao2.png)
 
 
 
