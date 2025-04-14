@@ -19,8 +19,7 @@ public class Pessoa{
     private int idade;
     private String cpf;
     private String telefone;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private LocalDate dataNascimento;
+    private String dataNascimento;
 
 
     /**
@@ -32,7 +31,7 @@ public class Pessoa{
      * @param dataNascimento Data de nascimento da pessoa.
      */
 
-    public Pessoa(String nome, int idade , String cpf , String telefone, LocalDate dataNascimento){
+    public Pessoa(String nome, int idade , String cpf , String telefone, String dataNascimento){
 
         this.idade = idade;
         this.nome = nome;
@@ -74,9 +73,9 @@ public class Pessoa{
         this.telefone = telefone;
     }
 
-    public LocalDate getDataNascimento() { return dataNascimento; }
+    public String getDataNascimento() { return dataNascimento; }
 
-    public void setDataNascimento(LocalDate dataNascimento) { this.dataNascimento = dataNascimento; }
+    public void setDataNascimento(String dataNascimento) { this.dataNascimento = dataNascimento; }
 
     @Override
     public String toString(){
