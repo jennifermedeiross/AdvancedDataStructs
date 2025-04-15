@@ -24,13 +24,13 @@ Geralmente, a MemTable é implementada como uma árvore binária balanceada, o q
 
 Quando a MemTable atinge sua capacidade máxima, os dados nela contidos são **descarregados (ou "flushed") para o disco**, no formato de uma **SSTable (Sorted String Table)** — um tipo de armazenamento otimizado para leitura e escrita sequenciais.
 
-Usamos árvore binária de busca balanceadas(AVL) na implementação. Ela têm essa cara:
+Usamos [árvore binária de busca balanceadas(AVL)](https://github.com/jennifermedeiross/AdvancedDataStructs/blob/main/benchmark-core/src/main/java/br/com/project/structs/lsm/tree/LSMTree.java) na implementação. Ela têm essa cara:
 
 | ![Exemplo AVL Perfeitamente balanceada](./assets/avl-exemplo1.png)  | ![Exemplo AVL Balanceada](./assets/avl-exemplo2.png) |
 |:----------------------------------------------------------:|:---------------------------------------------------:|
 | Exemplo de AVL Perfeitamente Balanceada                   | Exemplo de AVL Balanceada                            |
 
-Para nosso exemplo, teremos uma entidade Pessoa que representa de forma básica uma pessoa com nome, CPF, idade, telefone e data de nascimento. A AVLTree recebe um par <String, Pessoa>, em que a key é o CPF e o value é a instância do objeto Pessoa. Nesse caso, o Node armazena apenas o Value, pois a Function extrai a chave (CPF) a partir do valor armazenado (a instância de Pessoa).
+Para nosso exemplo, teremos uma entidade [Pessoa](https://github.com/jennifermedeiross/AdvancedDataStructs/blob/main/benchmark-core/src/main/java/br/com/project/entities/Pessoa.java) que representa de forma básica uma pessoa com nome, CPF, idade, telefone e data de nascimento. A AVLTree recebe um par <String, Pessoa>, em que a key é o CPF e o value é a instância do objeto Pessoa. Nesse caso, o Node armazena apenas o Value, pois a Function extrai a chave (CPF) a partir do valor armazenado (a instância de Pessoa).
 
 Ao inserirmos uma instância de Pessoa na árvore AVL, o CPF é extraído automaticamente por meio da keyExtractor, permitindo que a árvore posicione o nó corretamente sem que o Node precise armazenar a chave separadamente, garantindo que a árvore permaneça balanceada. Além disso, caso uma Pessoa com o mesmo CPF já exista, a árvore irá atualizar os dados dessa Pessoa, mantendo a integridade da estrutura de dados e a ordem de inserção. A busca e remoção também funcionam de maneira similar, utilizando o CPF como chave para localizar a instância da Pessoa correspondente.
 
@@ -175,8 +175,17 @@ Analogamente:
 
 ### Funcionamento LSM-Tree
 
-Na prática, com nosso exemplo, vamos abordar o funcionamento da LSM-Tree.
+Em posse do conhecimento desses conceitos, vamos abordar o funcionamento prático da nossa **LSM-Tree** com o exemplo.
 
+---
+#### Inserção:
+Quando precisamos inserir um novo elemento, ele é adicionado primeiro à **Memtable**.
+
+- Se essa estrutura ainda não atingiu seu limite de tamanho, a operação termina aqui.
+- Caso o tamanho máximo seja atingido, a **Memtable** atual é convertida em um buffer **imutável** e é agendada para ser salva no disco.
+- Em seguida, uma nova Memtable (vazia) é criada para receber novas inserções.
+
+Esse processo de salvar no disco é o `flush`.
 
 ```java
 [LSMTree]
@@ -187,9 +196,7 @@ public void add(K key, V value) throws JsonProcessingException {
         checkMemtableSize();
     }
 }
-```
-Memtable recebe esse `ByteArrayPair` e adiciona à AVLTree:
-```java
+
 [Memtable]
 
 private AVLTree<ByteArrayWrapper, ByteArrayPair> tree;
@@ -203,7 +210,151 @@ public void add(ByteArrayPair item) {
     byteSize += item.size();
 }
 ```
---
+
+- Se a **Memtable** atual atinge o limite, então é hora de criar uma **Memtable imutável** e "esvaziar" a atual para dar espaço a novos elementos: 
+
+```java
+    private void checkMemtableSize() {
+        if (mutableMemtable.byteSize() <= mutableMemtableMaxSize)
+            return;
+
+        synchronized (immutableMemtablesLock) {
+            immutableMemtables.addFirst(mutableMemtable);
+            mutableMemtable = new Memtable();
+        }
+    }
+}
+```
+
+- Periodicamente, acontece a verificação para que haja `flush`:
+```java
+AVLTree() {
+    memtableFlusher = newSingleThreadScheduledExecutor();
+    memtableFlusher.scheduleAtFixedRate(this::flushMemtable, 50, 50, TimeUnit.MILLISECONDS);
+}
+
+private void flushMemtable() {
+    Memtable memtableToFlush;
+    synchronized (immutableMemtablesLock) {
+        if (immutableMemtables.isEmpty())
+            return;
+
+        memtableToFlush = immutableMemtables.getLast();
+    }
+
+    SSTable table = new SSTable(dataDir, memtableToFlush.iterator(), mutableMemtableMaxSize * 2); // Cria uma nova SSTable
+
+    synchronized (tableLock) {
+        levels.get(0).add(0, table); // adiciona sempre ao nível 0
+    }
+
+    synchronized (immutableMemtablesLock) {
+        immutableMemtables.removeLast(); // apaga a Memtable imutável mais antiga
+    }
+}
+```
+- De tempos em tempos, também, acontece o `levelCompaction` que é a compactação de níveis:
+```java
+AVLTree() {
+    tableCompactor = newSingleThreadScheduledExecutor();
+    tableCompactor.scheduleAtFixedRate(this::levelCompaction, 200, 200, TimeUnit.MILLISECONDS);
+}
+
+private void levelCompaction() {
+    synchronized (tableLock) {
+        int n = levels.size();
+
+        int maxLevelSize = maxLevelZeroSstNumber;
+        long sstMaxSize = maxLevelZeroSstByteSize;
+
+        for (int i = 0; i < n; i++) {
+            ObjectArrayList<SSTable> level = levels.get(i);
+
+            if (level.size() > maxLevelSize) {
+                // Adiciona um novo nível se necessário
+                if (i == n - 1)
+                    levels.add(new ObjectArrayList<>());
+
+                // Pega todas as tabelas do nível atual e do próximo
+                ObjectArrayList<SSTable> nextLevel = levels.get(i + 1);
+                ObjectArrayList<SSTable> merge = new ObjectArrayList<>();
+                merge.addAll(level);
+                merge.addAll(nextLevel);
+
+                // Realiza uma execução ordenada e substitui o próximo nível
+                var sortedRun = SSTable.sortedRun(dataDir, sstMaxSize, merge.toArray(SSTable[]::new));
+
+                // Exclui as tabelas anteriores
+                level.forEach(SSTable::closeAndDelete);
+                level.clear();
+                nextLevel.forEach(SSTable::closeAndDelete);
+                nextLevel.clear();
+
+                nextLevel.addAll(sortedRun);
+            }
+
+            maxLevelSize = (int) (maxLevelSize * levelIncrFactor);
+            sstMaxSize = (int) (sstMaxSize * levelIncrFactor);
+        }
+    }
+}
+```
+
+---
+#### Busca:
+A função get busca um valor na LSM-Tree com base em uma chave, seguindo a ordem:
+
+1. Memtable mutável (em memória) – dados mais recentes;
+
+2. Memtables imutáveis – buffers aguardando flush;
+
+3. SSTables no disco – dados persistidos.
+
+- Se encontrar a chave, retorna o valor. 
+- Se o valor for um array vazio (length == 0), considera como "deletado" e retorna null. 
+- Se não encontrar em lugar nenhum, também retorna null.
+
+```java
+    public byte[] get(K key) throws JsonProcessingException {
+        byte[] result;
+        byte[] keyBytes = conversorToByte(key);
+
+        // busca na Memtable mutável
+        synchronized (mutableMemtableLock) {
+            result = mutableMemtable.get(keyBytes);
+            if (result != null) {
+                return result.length == 0 ? null : result;
+            }
+        }
+
+        // busca nas Memtables imutáveis
+        synchronized (immutableMemtablesLock) {
+            for (Memtable memtable : immutableMemtables) {
+                result = memtable.get(keyBytes);
+                if (result != null) {
+                    return result.length == 0 ? null : result;
+                }
+            }
+        }
+
+        // busca nas SSTables (disco)
+        synchronized (tableLock) {
+            for (ObjectArrayList<SSTable> level : levels) {
+                for (SSTable table : level) {
+                    result = table.get(keyBytes);
+                    if (result != null) {
+                        return result.length == 0 ? null : result;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+```
+---
+#### Remoção
+
 Vale destacar que, em LSM-Trees, a remoção é tratada como uma nova inserção: adiciona-se um valor especial conhecido como `TOMBSTONE` (um marcador de exclusão), associado à chave correspondente. Isso indica que o valor foi deletado, mesmo antes da persistência no disco.
 ```java
 [Memtable]
@@ -212,8 +363,19 @@ public void remove(byte[] key) {
     tree.add(new ByteArrayPair(key, new byte[]{}));
 }
 ```
-Se a chave a ser removida já estiver presente na **Memtable mutável**, seu valor é simplesmente substituído por um `tombstone` (por exemplo, um `byte[]` vazio).
+- Se a chave a ser removida já estiver presente na **Memtable mutável**: seu valor é simplesmente substituído por um `tombstone` (por exemplo, um `byte[]` vazio).
 
-No entanto, caso a chave não esteja na **Memtable mutável**, não podemos alterar diretamente as SSTables (que já estão persistidas no disco e são imutáveis). Por isso, adicionamos uma nova entrada na Memtable com a mesma chave e um valor especial indicando exclusão (`tombstone`).
+- No entanto, caso a chave não esteja na **Memtable mutável**: não podemos alterar diretamente as **SSTables** (que já estão persistidas no disco e são imutáveis). Por isso, adicionamos uma nova entrada na **Memtable** com a mesma chave e um valor especial indicando exclusão (`tombstone`).
 
 Esse `tombstone` garante que, durante futuras leituras ou operações de compactação, a chave seja tratada como removida, mesmo que versões anteriores ainda existam em SSTables mais antigas.
+
+```java
+    public void delete(K key) throws JsonProcessingException {
+        synchronized (mutableMemtableLock) {
+            mutableMemtable.remove(conversorToByte(key));
+            checkMemtableSize();
+        }
+    }
+```
+
+Novamente, como a exclusão é uma inserção, segue o mesmo princípio dela.
