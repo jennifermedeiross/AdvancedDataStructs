@@ -7,6 +7,8 @@ O PostgreSQL, por exemplo, utiliza B-Trees como estrutura padrão para armazenam
 
 Nesse cenário, surgem alternativas como a LSM-Tree, que minimizam esse custo ao otimizar o fluxo de inserção e reduzir o número de acessos diretos ao disco.
 
+Um aspecto essencial dessa estrutura é a organização ordenada dos dados; na verdade, as chaves são mantidas em ordem tanto na memória principal quanto no armazenamento persistente, permitindo buscas eficientes com complexidade logarítmica.
+
 ---
 
 Tudo bem, agora discutiremos como essa estrutura funciona e veremos a implementação em java baseada e inspirada na implementação e arquitetura de [Francesco Tomaselli](https://github.com/tomfran).
@@ -40,41 +42,32 @@ AVLTree<String, Pessoa> avl = new AVLTree<>(Pessoa::getCpf);
 avl.add(new Pessoa(...));
 ```
 
-Na prática, quando a LSMTree adicionar os elementos, eles serão adicionados como um par chave-valor em que ambos são uma `byte[]`:
-```java
-[LSMTree]
+**Buscar na AVL é como procurar numa lista ordenada, mas muito mais rapidamente:**
 
-public void add(K key, V value) throws JsonProcessingException {
-    synchronized (mutableMemtableLock) {
-        mutableMemtable.add(new ByteArrayPair(conversorToByte(key), conversorToByte(value)));
-        checkMemtableSize();
-    }
-}
-```
-Memtable recebe esse `ByteArrayPair` e adiciona à AVLTree:
-```java
-[Memtable]
+- Começamos na raiz da árvore.
 
-private AVLTree<ByteArrayWrapper, ByteArrayPair> tree;
+- Se o valor for menor que o nó atual, vamos para a esquerda.
 
-public Memtable() {
-    tree = new AVLTree<>(ByteArrayPair::getKey); // indica como pegar a chave
-}
+- Se for maior, vamos para a direita.
 
-public void add(ByteArrayPair item) {
-    tree.add(item);
-    byteSize += item.size();
-}
-```
+- Repetimos esse processo até encontrar ou até chegar numa folha (nó sem filhos).
 
-Vale destacar que, em LSM-Trees, a remoção é tratada como uma nova inserção: adiciona-se um valor especial conhecido como TOMBSTONE (um marcador de exclusão), associado à chave correspondente. Isso indica que o valor foi deletado, mesmo antes da persistência no disco.
-```java
-[Memtable]
+Como a árvore está sempre equilibrada, a quantidade de passos será próxima de log(n).
 
-public void remove(byte[] key) {
-    tree.add(new ByteArrayPair(key, new byte[]{}));
-}
-```
+**Como funciona a inserção?**
+- Buscamos o lugar certo para inserir, usando a mesma lógica da busca.
+- Se já existe um nó com a mesma chave (ex: mesmo CPF), atualizamos o valor.
+- Se não existir, criamos um novo nó e colocamos no lugar certo.
+- Depois, verificamos se a árvore ficou desbalanceada.
+- Se estiver, aplicamos rotações para equilibrar.
+
+Exemplo: Se inserirmos vários dados seguidos para a direita, a árvore pode "pender" para um lado. A rotação corrige isso automaticamente.
+
+A Memtable é a primeira parada dos dados em sistemas baseados em LSM-Trees. Ela armazena as informações na memória de forma organizada, facilitando tanto inserções quanto buscas. Mesmo sendo uma estrutura temporária, seu papel é essencial: manter os dados ordenados desde o início, o que é importante para garantir um bom desempenho nas próximas etapas.
+
+Quando a Memtable enche, ela é "despejada" no disco, virando uma SSTable — um arquivo imutável, otimizado para leitura e gravação sequencial. Como os dados já estão ordenados na memória, esse processo de gravação no disco se torna muito mais eficiente.
+
+No fim, a Memtable não é só um cache: ela é uma parte fundamental da estratégia de escrita das LSM-Trees, cuidando da organização, velocidade e preparação dos dados para o armazenamento permanente.
 
 ---
 
@@ -106,11 +99,66 @@ Abaixo segue uma representação simplória de como os dados chegam à SSTable.
 
 ![Fluxo incial que mostra como os dados chegam à SSTable](./assets/sstable-inicial.png)
 
+---
+Rapidamente, vamos entender melhor o `bloomFilter` e `índice esparso`:
+
+>Um **Bloom Filter** é uma estrutura de dados probabilística usada para testar se um elemento possivelmente está presente em um conjunto. Ele pode dar falsos positivos, mas nunca falsos negativos.
+
+**Como funciona:**
+Quando inserimos uma chave (ex: CPF), ela é passada por várias funções hash.
+Cada hash marca um ou mais bits como 1 em um vetor de bits.
+Para verificar se uma chave existe, aplicamos os mesmos hashes e vemos se os bits estão marcados como 1.
+
+Exemplo (conteúdo .bloom):
+````
+000101001010011010... (vetor de bits com os bits setados)
+````
+Usado para dizer "essa chave talvez esteja na SSTable" sem acessar o disco inteiro.
+
+---
+>O **índice esparso** guarda apenas algumas entradas da tabela (não todas), economizando espaço, e servindo como atalhos para busca.
+
+**Como funciona:**
+
+Ao escrever as chaves no disco, a cada N chaves (por exemplo, 1000), salvamos:
+
+- O offset (posição no arquivo onde aquela chave começa),
+
+- A chave,
+
+- E a quantidade acumulada de registros até ali.
+
+Com isso, na leitura, conseguimos fazer uma busca binária nesse índice menor e pular direto para a parte do arquivo onde provavelmente está a chave.
+
+Exemplo (conteúdo .index):
+```
+204.756.938-92   → offset 4096   → posição 3000 da lista
+```
+
+---
+
 Mais a diante, discutiremos o fluxo completo. A priori, o objetivo é entendermos o que é cada um desses componentes da **LSMTree**.
 
 ---
 
 ### Flush e Compactação
+
+#### Flush
+
+O **flush** acontece quando a estrutura em memória atinge sua capacidade máxima. Nesse ponto, os dados são transferidos para o disco de forma ordenada, liberando espaço na RAM para novas inserções. Essa transferência é eficiente justamente por aproveitar a ordenação prévia, permitindo gravações sequenciais rápidas.
+Durante o flush, tombstones (valores especiais que indicam remoção lógica) também são persistidos. Eles não eliminam imediatamente os dados antigos, mas sinalizam que determinadas chaves devem ser ignoradas em leituras futuras.
+Com o tempo, múltiplos arquivos no disco vão se acumulando. Para evitar degradação no desempenho das buscas e liberar espaço ocupado por dados obsoletos ou removidos, entra em cena a compactação. Ela realiza a fusão desses arquivos, removendo duplicações, aplicando os tombstones e reorganizando os dados em um novo arquivo mais enxuto e eficiente.
+
+#### Compactação
+
+A **compactação** é o processo responsável por manter a base de dados enxuta e eficiente ao longo do tempo. Ela ocorre periodicamente ou sob determinadas condições, como excesso de arquivos ou volume elevado de tombstones.
+
+Durante a compactação, os arquivos persistidos são lidos e mesclados em um novo arquivo ordenado. Nessa etapa:
+- Chaves duplicadas são unificadas, preservando apenas a versão mais recente.
+- Tombstones são aplicados: chaves marcadas como removidas são efetivamente descartadas.
+- Os dados são regravados em um novo arquivo, enquanto os antigos são descartados.
+
+Esse processo reduz a fragmentação, melhora o desempenho de leitura e libera espaço em disco. Além disso, como a compactação pode ser feita em diferentes níveis (por exemplo, *minor* envolvendo poucos arquivos ou *major* envolvendo todos os arquivos de um nível), é possível balancear custo e benefício conforme a carga de trabalho do sistema.
 
 #### Estratégia Baseada em Inspeção Temporizada para Flush e Compactação
 Na arquitetura da LSM-Tree, tanto o flush da Memtable quanto a compactação entre níveis são operações essenciais para manter a estrutura eficiente, organizada e rápida em operações de leitura e escrita.
@@ -119,3 +167,49 @@ Embora seja possível realizar essas operações com base em limites de tamanho 
 
 Isso porque, ao realizar testes com cargas razoavelmente grandes (a partir de 10.000 registros), observamos que a estratégia baseada em verificação por tamanho apresentava um leve impacto negativo no tempo de execução. Embora essa diferença de desempenho não tenha sido drástica, a abordagem com inspeção temporizada se mostrou mais eficiente e estável para o nosso cenário. Ela permite que o sistema mantenha sua performance mesmo sob variações de carga, evitando pausas ou gargalos causados por verificações frequentes baseadas em tamanho ou quantidade de SSTables.
 
+Analogamente:
+
+<img alt="Representação do processo de flush e compactação" height="100%" src="./assets/flush-compact.png" width="100%"/>
+
+---
+
+Na prática, no nosso exemplo, quando a LSMTree adicionar os elementos, eles serão adicionados como um par chave-valor em que ambos são uma `byte[]`:
+```java
+[LSMTree]
+
+public void add(K key, V value) throws JsonProcessingException {
+    synchronized (mutableMemtableLock) {
+        mutableMemtable.add(new ByteArrayPair(conversorToByte(key), conversorToByte(value)));
+        checkMemtableSize();
+    }
+}
+```
+Memtable recebe esse `ByteArrayPair` e adiciona à AVLTree:
+```java
+[Memtable]
+
+private AVLTree<ByteArrayWrapper, ByteArrayPair> tree;
+
+public Memtable() {
+    tree = new AVLTree<>(ByteArrayPair::getKey); // indica como pegar a chave
+}
+
+public void add(ByteArrayPair item) {
+    tree.add(item);
+    byteSize += item.size();
+}
+```
+--
+Vale destacar que, em LSM-Trees, a remoção é tratada como uma nova inserção: adiciona-se um valor especial conhecido como `TOMBSTONE` (um marcador de exclusão), associado à chave correspondente. Isso indica que o valor foi deletado, mesmo antes da persistência no disco.
+```java
+[Memtable]
+
+public void remove(byte[] key) {
+    tree.add(new ByteArrayPair(key, new byte[]{}));
+}
+```
+Se a chave a ser removida já estiver presente na **Memtable mutável**, seu valor é simplesmente substituído por um `tombstone` (por exemplo, um `byte[]` vazio).
+
+No entanto, caso a chave não esteja na **Memtable mutável**, não podemos alterar diretamente as SSTables (que já estão persistidas no disco e são imutáveis). Por isso, adicionamos uma nova entrada na Memtable com a mesma chave e um valor especial indicando exclusão (`tombstone`).
+
+Esse `tombstone` garante que, durante futuras leituras ou operações de compactação, a chave seja tratada como removida, mesmo que versões anteriores ainda existam em SSTables mais antigas.
