@@ -36,20 +36,25 @@ def salvar_dados(quantidade=1000):
     """
     Gera e salva um conjunto de dados fictícios em um arquivo JSON.
 
+    Os dados gerados são armazenados no diretório:
+    'benchmark-core/src/main/java/br/com/project/data/', com o nome
+    'dados-{quantidade}.json', onde {quantidade} representa a quantidade de registros gerados.
+
     Parâmetros:
-        quantidade (int, opcional): Número de registros a serem gerados. Padrão é 50.
-        arquivo_nome (str, opcional): Nome do arquivo onde os dados serão salvos. Padrão é "dados.json".
+        quantidade (int, opcional): Número de registros a serem gerados. Padrão é 1000.
 
     Retorna:
-        None: Os dados são salvos diretamente no arquivo JSON.
+        None
     """
-    current_dir = Path(__file__).resolve().parent
-    arquivo_nome = current_dir.parents[0] / f"benchmark-core/src/main/java/br/com/project/data/dados-{quantidade}.json"
-    dados = [gera_dados() for _ in range(quantidade)]
-    with open(arquivo_nome, "w", encoding="utf-8") as arquivo:
-        json.dump(dados, arquivo, indent=4, ensure_ascii=False)
+    root_path = Path(__file__).resolve().parent.parent
+    data_dir = root_path / "benchmark-core/src/main/java/br/com/project/data"
+    data_dir.mkdir(parents=True, exist_ok=True)
 
-# Gera e salva os dados fictícios
-quantidade = [1000, 5000, 10000, 25000, 50000, 100000, 500000, 100000000]
-for i in range(8):
-    salvar_dados(quantidade[i])
+    arquivo = data_dir / f"dados-{quantidade}.json"
+    dados = [gera_dados() for _ in range(quantidade)]
+    with arquivo.open("w", encoding="utf-8") as f:
+        json.dump(dados, f, indent=4, ensure_ascii=False)
+
+quantidade = [1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 750000,1000000,1500000]
+for i in range(len(quantidade)):
+   salvar_dados(quantidade[i])

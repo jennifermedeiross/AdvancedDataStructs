@@ -1,4 +1,4 @@
-package br.com.project.structs;
+package br.com.project.structs.btree;
 
 import br.com.project.entities.Pessoa;
 import java.util.ArrayList;
@@ -314,7 +314,33 @@ public class BTree {
         parent.children.remove(idx + 1);
     }
 
+     /**
+     * Retorna o número total de elementos (pessoas) na árvore.
+     * 
+     * @return O número de pessoas na árvore.
+     */
+    public int size() {
+        return size(root);
+    }
+
+    /**
+     * Calcula o número total de elementos recursivamente.
+     * 
+     * @param node Nó atual da árvore.
+     * @return O número total de pessoas no nó e seus filhos.
+     */
+    private int size(BTreeNode node) {
+        int size = node.keys.size(); // Conta as pessoas no nó atual
+        if (!node.isLeaf) { // Se não for folha, conta os filhos
+            for (BTreeNode child : node.children) {
+                size += size(child); // Soma o número de pessoas nos filhos
+            }
+        }
+        return size;
+    }
 }
+
+
 
 /**
  * Implementação de uma B-TreeNode (Nó) que armazena as chaves do tipo pessoa e

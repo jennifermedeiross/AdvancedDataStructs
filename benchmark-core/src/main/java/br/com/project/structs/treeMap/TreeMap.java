@@ -19,26 +19,6 @@ public class TreeMap<K extends Comparable<K>, V> {
     private static final boolean BLACK = false;
 
     /**
-     * Classe interna que representa um no da árvore.
-     * Cada nó contém uma chave , um valor , referência para os filhos esquerdo e direito , e uma cor(vermelho ou preto).
-     */
-    private class Node {
-        K key;
-        V value;
-        Node left, right;
-        boolean color;
-
-        Node(K key, V value, boolean color) {
-            this.key = key;
-            this.value = value;
-            this.color = color;
-        }
-    }
-
-    private Node root;// raiz da árvore
-    private int size = 0; // Contador de elementos
-
-    /**
      *  Verifica se o nó é vermelho
      *  Um nó nulo é considerado preto.
      */
@@ -92,9 +72,14 @@ public class TreeMap<K extends Comparable<K>, V> {
      */
     public void put(K key, V value) {
         if (key == null) throw new IllegalArgumentException("Chave não pode ser nula.");
+
+        boolean alreadyExists = containsKey(key);
+
         root = insert(root, key, value);
         root.color = BLACK; // A raiz deve sempre ser preta
-        size++;
+        if(!alreadyExists){
+            size++;
+        }
     }
 
     /**
@@ -111,9 +96,15 @@ public class TreeMap<K extends Comparable<K>, V> {
         if (h == null) return new Node(key, value, RED);
         // Compara o valor da chave atual com a que acabou de ser criada
         int cmp = key.compareTo(h.key);
-        if (cmp < 0) h.left = insert(h.left, key, value);
-        else if (cmp > 0) h.right = insert(h.right, key, value);
-        else h.value = value; // Atualiza se a chave já existe
+
+        if (cmp < 0) {
+            h.left = insert(h.left, key, value);
+        } else if (cmp > 0) {
+            h.right = insert(h.right, key, value);
+        } else {
+            h.value = value; // Atualiza se a chave já existe
+
+        }
 
         // Balanceamento de acordo com a situação que ocorrer
         if (isRed(h.right) && !isRed(h.left)) h = rotateLeft(h);
@@ -402,4 +393,26 @@ public class TreeMap<K extends Comparable<K>, V> {
             return node.key;
         }
     }
+
+
+    /**
+     * Classe interna que representa um no da árvore.
+     * Cada nó contém uma chave , um valor , referência para os filhos esquerdo e direito , e uma cor(vermelho ou preto).
+     */
+    private class Node {
+        K key;
+        V value;
+        Node left, right;
+        boolean color;
+
+        Node(K key, V value, boolean color) {
+            this.key = key;
+            this.value = value;
+            this.color = color;
+        }
+    }
+
+    private Node root;// raiz da árvore
+    private int size = 0; // Contador de elementos
+
 }
