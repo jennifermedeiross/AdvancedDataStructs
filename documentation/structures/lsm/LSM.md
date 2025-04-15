@@ -14,7 +14,7 @@ Um aspecto essencial dessa estrutura é a organização ordenada dos dados; na v
 Tudo bem, agora discutiremos como essa estrutura funciona e veremos a implementação em java baseada e inspirada na implementação e arquitetura de [Francesco Tomaselli](https://github.com/tomfran).
 Inicialmente, é importante entender que uma árvore LSM é composta de dois componentes principais:
 
-![Fluxo MemTable - SSTable](assets/fluxo-mem-ss-diag.png)
+---
 
 #### Memtable
 
@@ -300,6 +300,8 @@ private void levelCompaction() {
 }
 ```
 
+![Fluxo de inserção](./assets/fluxo-insert.png)
+
 ---
 #### Busca:
 A função get busca um valor na LSM-Tree com base em uma chave, seguindo a ordem:
@@ -352,6 +354,8 @@ A função get busca um valor na LSM-Tree com base em uma chave, seguindo a orde
         return null;
     }
 ```
+
+![Fluxo de busca](./assets/fluxo-search.png)
 ---
 #### Remoção
 
@@ -379,3 +383,14 @@ Esse `tombstone` garante que, durante futuras leituras ou operações de compact
 ```
 
 Novamente, como a exclusão é uma inserção, segue o mesmo princípio dela.
+
+---
+
+### Conclusão
+
+A LSM Tree é uma estrutura eficiente para cenários com muitas gravações. Ela combina uma tabela em memória (Memtable), rápida e ordenada, com arquivos persistentes no disco (SSTables), otimizados para leitura sequencial. Quando a Memtable enche, os dados são organizados e gravados em disco de forma compacta.
+
+Essa arquitetura permite reduzir acessos ao disco e melhorar o desempenho de inserções, buscas e remoções. Com o uso de filtros como o de Bloom e índices auxiliares, ela evita leituras desnecessárias e mantém boas velocidades de acesso.
+
+Em essência, a LSM Tree equilibra bem desempenho, organização e uso eficiente do armazenamento, sendo ideal para aplicações que precisam lidar com grandes volumes de dados.
+
