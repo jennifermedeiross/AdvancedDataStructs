@@ -3,7 +3,7 @@
 A LSM Tree, ou Árvore de Mesclagem Baseada em Log, é uma estrutura de dados bastante utilizada em sistemas de arquivos e bancos de dados. Sua principal vantagem está no desempenho eficiente para operações de escrita. Devido a essa característica, é comumente adotada por bancos de dados NoSQL, como o Cassandra, SyllaDB e RocksDB.
 
 ### Por que LSM Tree?
-O PostgreSQL, por exemplo, utiliza B-Trees como estrutura padrão para armazenamento e busca de dados, com operações em tempo O(log n). Apesar de eficientes para leitura e escrita, as B-Trees enfrentam um problema chamado amplificação de escrita: uma única inserção pode exigir a atualização de várias páginas no disco, resultando em muitas operações de E/S aleatórias. Isso impacta negativamente o desempenho em cargas de escrita intensas.
+O PostgreSQL, por exemplo, utiliza [B-Trees](../btree/Btree.md) como estrutura padrão para armazenamento e busca de dados, com operações em tempo O(log n). Apesar de eficientes para leitura e escrita, as B-Trees enfrentam um problema chamado amplificação de escrita: uma única inserção pode exigir a atualização de várias páginas no disco, resultando em muitas operações de E/S aleatórias. Isso impacta negativamente o desempenho em cargas de escrita intensas.
 
 Nesse cenário, surgem alternativas como a LSM-Tree, que minimizam esse custo ao otimizar o fluxo de inserção e reduzir o número de acessos diretos ao disco.
 
@@ -173,7 +173,11 @@ Analogamente:
 
 ---
 
-Na prática, no nosso exemplo, quando a LSMTree adicionar os elementos, eles serão adicionados como um par chave-valor em que ambos são uma `byte[]`:
+### Funcionamento LSM-Tree
+
+Na prática, com nosso exemplo, vamos abordar o funcionamento da LSM-Tree.
+
+
 ```java
 [LSMTree]
 
