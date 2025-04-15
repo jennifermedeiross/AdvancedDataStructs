@@ -97,7 +97,7 @@ A principal vantagem das SSTables está na eficiência da leitura e escrita sequ
 
 Abaixo segue uma representação simplória de como os dados chegam à SSTable.
 
-![Fluxo incial que mostra como os dados chegam à SSTable](./assets/sstable-inicial.png)
+![Fluxo inicial que mostra como os dados chegam à SSTable](./assets/sstables.png)
 
 ---
 Rapidamente, vamos entender melhor o `bloomFilter` e `índice esparso`:
@@ -394,3 +394,19 @@ Essa arquitetura permite reduzir acessos ao disco e melhorar o desempenho de ins
 
 Em essência, a LSM Tree equilibra bem desempenho, organização e uso eficiente do armazenamento, sendo ideal para aplicações que precisam lidar com grandes volumes de dados.
 
+---
+### Referências
+
+BANSAL, Vivek. What is LSM Tree? Substack. Disponível em: https://vivekbansal.substack.com/p/what-is-lsm-tree.
+
+SCYLLADB. Log-Structured Merge-Tree (LSM Tree). ScyllaDB Glossary. Disponível em: https://www.scylladb.com/glossary/log-structured-merge-tree/.
+
+SINGH, Mandeep. Understanding the Log-Structured Merge (LSM) Tree – A Deep Dive into Efficient Data Storage. Medium. Disponível em: https://medium.com/@mndpsngh21/understanding-the-log-structured-merge-lsm-tree-a-deep-dive-into-efficient-data-storage-d7ef3a7562ba.
+
+O'NEIL, Patrick et al. The Log-Structured Merge-Tree (LSM-Tree). University of Massachusetts Boston. Disponível em: https://www.cs.umb.edu/~poneil/lsmtree.pdf.
+
+JOÃO ARTHUR. AVL – Árvores Balanceadas. EDA com João Arthur. Disponível em: https://joaoarthurbm.github.io/eda/posts/avl/.
+
+YOUTUBE. LSM Tree | Explained with real-life example | Data Structures. Disponível em: https://www.youtube.com/watch?v=lbEl8nXM7pE.
+
+YOUTUBE. LSM Trees: Compaction. Disponível em: https://www.youtube.com/watch?v=oUNjDHYFES8.
