@@ -2,7 +2,7 @@ package br.com.project.controller;
 
 import br.com.project.entities.Pessoa;
 import br.com.project.structs.lsm.tree.LSMTree;
-import br.com.project.structs.BTree;
+import br.com.project.structs.btree.*;
 import br.com.project.structs.lsm.types.ByteArrayPair;
 import br.com.project.structs.TreeMap;
 
@@ -78,7 +78,7 @@ public class StructuresController {
 
             startTime = System.nanoTime();
 
-            lsmTree.add(new ByteArrayPair(cpfBytes, pessoaBytes));
+            // lsmTree.add(new ByteArrayPair(cpfBytes, pessoaBytes));
 
             endTime = System.nanoTime();
             duration = endTime - startTime;
@@ -92,7 +92,7 @@ public class StructuresController {
         for (int i = 0; i < pessoas.length; i++) {
             startTime = System.nanoTime();
 
-            lsmTree.delete(randomCpf(pessoas).getBytes(StandardCharsets.UTF_8));
+            // lsmTree.delete(randomCpf(pessoas).getBytes(StandardCharsets.UTF_8));
 
             endTime = System.nanoTime();
             duration = endTime - startTime;
@@ -107,7 +107,7 @@ public class StructuresController {
         for (Pessoa pessoa : pessoas) {
             startTime = System.nanoTime();
 
-            lsmTree.get(pessoa.getCpf().getBytes(StandardCharsets.UTF_8));
+            // lsmTree.get(pessoa.getCpf().getBytes(StandardCharsets.UTF_8));
 
             endTime = System.nanoTime();
             duration = endTime - startTime;
