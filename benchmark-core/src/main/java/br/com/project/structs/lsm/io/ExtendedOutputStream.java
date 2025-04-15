@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
 import java.io.FileOutputStream;
 
 /**
- * Classe para escrita de inteiros e longs codificados em bytes variáveis utilizando FastBufferedOutputStream.
+ * Classe para escrita de inteiros e longs codificados em bytes utilizando FastBufferedOutputStream.
  */
 public class ExtendedOutputStream {
 
@@ -43,7 +43,7 @@ public class ExtendedOutputStream {
     }
 
     /**
-     * Escreve um inteiro codificado em bytes variáveis no fluxo.
+     * Escreve um inteiro codificado em bytes no fluxo.
      *
      * @param n inteiro a ser escrito.
      * @return número de bytes escritos.
@@ -53,7 +53,7 @@ public class ExtendedOutputStream {
     }
 
     /**
-     * Escreve um long codificado em bytes variáveis no fluxo.
+     * Escreve um long codificado em bytes no fluxo.
      *
      * @param n long a ser escrito.
      * @return número de bytes escritos.
@@ -107,7 +107,7 @@ public class ExtendedOutputStream {
             VBYTE_BUFFER[i++] = (byte) (n & 0x7F);
             n = n / 128;
         }
-        VBYTE_BUFFER[i - 1] |= 0x80;
+        VBYTE_BUFFER[i - 1] |= (byte) 0x80;
 
         byte[] res = new byte[i];
         System.arraycopy(VBYTE_BUFFER, 0, res, 0, i);
@@ -137,7 +137,7 @@ public class ExtendedOutputStream {
             VBYTE_BUFFER[i++] = (byte) (n & 0x7F);
             n = n / 128;
         }
-        VBYTE_BUFFER[i - 1] |= 0x80;
+        VBYTE_BUFFER[i - 1] |= (byte) 0x80;
 
         byte[] res = new byte[i];
         System.arraycopy(VBYTE_BUFFER, 0, res, 0, i);

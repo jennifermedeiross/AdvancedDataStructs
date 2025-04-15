@@ -72,6 +72,7 @@ A descida até o nó folha garante que a árvore se mantém balanceada durante a
 #### Exemplo:
 Em uma árvore com os nós [10, 20, 30] e [40, 50, 60], ao tentar inserir a chave 25, o algoritmo começa pela raiz e segue o ponteiro para o nó [20, 30], pois 25 está entre 20 e 30. O próximo passo é inserir a chave 25 nesse nó folha.
 
+
 ---
 2. **Divisão de nós**: Quando o **nó folha** é encontrado, a próxima etapa é inserir a chave no local apropriado dentro do nó. A chave deve ser inserida de forma que as chaves dentro do nó permaneçam ordenadas.
 
@@ -83,6 +84,10 @@ A operação de inserção é simples quando o nó tem espaço suficiente para a
 
 #### Exemplo:
 Em um nó [10, 20, 30], se quisermos inserir a chave 25, a chave será colocada entre 20 e 30, resultando no nó [10, 20, 25, 30].
+
+| ![Inserção1](./assets/insercao1.png) | ➡️ | ![Inserção2](./assets/insercao2.png) |
+|:------------------------------:|:--:|:----------------------------:|
+
 
 ---
 3. **Divisão recursiva**: Se o nó folha já estiver **cheio** (contendo 2t-1 chaves), ele precisa ser **dividido** para acomodar a nova chave. Esse é o processo mais complexo da inserção em B-árvores e garante que a árvore permaneça balanceada.
@@ -97,11 +102,17 @@ Em um nó [10, 20, 30], se quisermos inserir a chave 25, a chave será colocada 
 Esse processo de divisão e promoção de chaves pode se repetir até que a raiz da árvore seja dividida, aumentando a altura da árvore.
 
 #### Exemplo:
-Suponha que temos um nó folha com as chaves [10, 20, 30, 40, 50]. Se a chave 25 for inserida, o nó será dividido em dois nós:
+Suponha que temos um nó folha com as chaves [10, 20, 30, 40, 50]. 
+
+![Inserção3](./assets/insercao3.png)
+
+Se a chave 25 for inserida, o nó será dividido em dois nós:
 - Nó 1: [10, 20]
 - Nó 2: [30, 40, 50]
 
 A chave mediana (25) será promovida para o nó pai. Se o nó pai também estiver cheio, o processo se repete até que a árvore seja ajustada.
+
+![Inserção4](./assets/insercao4.png)
 
 ---
 
@@ -119,6 +130,12 @@ Este processo é simples e rápido, com complexidade de tempo \( O(h) \), onde \
 
 #### Exemplo:
 Se um nó folha contém as chaves `[10, 20, 30]` e a chave 20 deve ser removida, o nó se tornará `[10, 30]` após a remoção. Nenhuma reorganização dos nós é necessária.
+| ![IDelecao1](./assets/delecao1.png) | ➡️ | ![Delecao2](./assets/delecao2.png) |
+|:------------------------------:|:--:|:----------------------------:|
+
+
+
+
 
 ---
 
@@ -126,6 +143,17 @@ Se um nó folha contém as chaves `[10, 20, 30]` e a chave 20 deve ser removida,
 
 #### Possíveis soluções de balanceamento:
 - **Emprestar uma chave do irmão adjacente**: Se o nó possui um irmão adjacente (esquerda ou direita) que possui mais do que o número mínimo de chaves (ou seja, mais de t-1 chaves), uma chave pode ser emprestada desse irmão. A chave emprestada será movida para o nó que perdeu a chave, e uma chave do pai será movida para o irmão.
+
+#### Exemplo:
+Temos os nós folhas `[10, 20, 30, 35]`, `[50 ,55]`, `[70, 100, 103]` e o nó pai `[40, 60]`. 
+
+![Delecao5](./assets/delecao5.png)
+
+Ao remover a chave 55 teremos nós folhas `[10, 20, 30]`, `[40, 50]`, `[70, 100, 103]` e o nó pai `[35, 60]`.
+
+![Delecao6](./assets/delecao6.png)
+
+
   
 - **Combinando dois nós**: Caso os irmãos adjacentes também tenham apenas t-1 chaves, o nó será combinado com um dos irmãos. Isso ocorre da seguinte maneira:
   1. O nó que perdeu a chave se funde com seu irmão adjacente.
@@ -133,6 +161,14 @@ Se um nó folha contém as chaves `[10, 20, 30]` e a chave 20 deve ser removida,
   3. Se o nó pai também estiver com o número de chaves abaixo do mínimo, o processo de balanceamento é recursivo e se propaga para cima na árvore.
 
 Essas operações garantem que a árvore permaneça balanceada após a remoção, mantendo a propriedade de que todos os nós internos têm entre t-1 e 2t-1 chaves, e a altura da árvore é minimizada.
+
+#### Exemplo: 
+Ao remover a chave 5 o nó `[1, 2]` se une com a chave 4, a chave 3 do nó pai que separava os dois nós se une ao novo nó formado, mas o pai fere o número de chaves mínimas e o processo é repetido recursivamente juntando `[6]` com a chave 30 o nó `[9]` se junta e a chave 30 assume a posição de nó pai.
+
+![Deleção7](./assets/delecao7.png)
+
+![Deleção8](./assets/delecao8.png)
+
 
 ---
 

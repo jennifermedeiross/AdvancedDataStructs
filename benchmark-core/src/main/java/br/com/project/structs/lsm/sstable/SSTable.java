@@ -1,10 +1,9 @@
 package br.com.project.structs.lsm.sstable;
 
-import br.com.project.structs.lsm.bloom.BloomFilter;
-import br.com.project.structs.lsm.comparator.ByteArrayComparator;
 import br.com.project.structs.lsm.io.ExtendedInputStream;
 import br.com.project.structs.lsm.io.ExtendedOutputStream;
 import br.com.project.structs.lsm.types.ByteArrayPair;
+import br.com.project.structs.lsm.types.ByteArrayWrapper;
 import br.com.project.structs.lsm.utils.IteratorMerger;
 import br.com.project.structs.lsm.utils.UniqueSortedIterator;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -17,8 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static br.com.project.structs.lsm.comparator.ByteArrayComparator.compare;
-
 /**
  * A classe SSTable representa uma tabela de busca otimizada para armazenar
  * pares chave-valor em disco. Ela inclui operações para leitura, escrita,
@@ -26,45 +23,31 @@ import static br.com.project.structs.lsm.comparator.ByteArrayComparator.compare;
  */
 public class SSTable implements Iterable<ByteArrayPair> {
 
-    /** Extensão do arquivo de dados. */
     public static final String DATA_FILE_EXTENSION = ".data";
-
-    /** Extensão do arquivo de filtro de Bloom. */
     public static final String BLOOM_FILE_EXTENSION = ".bloom";
-
-    /** Extensão do arquivo de índice. */
     public static final String INDEX_FILE_EXTENSION = ".index";
 
     private static final int DEFAULT_SAMPLE_SIZE = 1000;
-
-    /** Contador atômico para geração de nomes de arquivos SSTable. */
     static final AtomicLong SST_COUNTER = new AtomicLong();
-
-    /** Lista dos offsets esparsos no arquivo de dados. */
     LongArrayList sparseOffsets;
-
-    /** Lista do número de elementos por offset esparso. */
     IntArrayList sparseSizeCount;
-
-    /** Lista das chaves dos elementos esparsos. */
     ObjectArrayList<byte[]> sparseKeys;
 
-    /** Filtro de Bloom para otimização de busca. */
     BloomFilter bloomFilter;
 
     public String filename;
     ExtendedInputStream is;
     public int size;
 
-    byte[] minKey;
-    byte[] maxKey;
+    ByteArrayWrapper minKey;
+    ByteArrayWrapper maxKey;
 
     /**
      * Cria uma nova SSTable a partir de um iterável de itens.
      *
-     * @param directory   O diretório onde a SSTable será salva.
-     * @param items       Os itens a serem escritos na SSTable (deve estar ordenado).
-     * @param sampleSize  O número de itens a serem pulados entre entradas no índice esparso.
+     * @param directory  O diretório onde a SSTable será salva.
+     * @param items      Os itens a serem escritos na SSTable (deve estar ordenado).
+     * @param sampleSize O número de itens a serem pulados entre entradas no índice esparso.
      */
     public SSTable(String directory, Iterator<ByteArrayPair> items, int sampleSize) {
         this(getNextSstFilename(directory), items, sampleSize, 1024 * 1024 * 256);
@@ -116,11 +99,11 @@ public class SSTable implements Iterable<ByteArrayPair> {
     }
 
     /**
-     * Combina várias SSTables ordenadas em uma nova lista de SSTables.
+     * Combina várias SSTables ordenadas numa nova lista de SSTables.
      *
-     * @param dataDir   O diretório onde as novas SSTables serão armazenadas.
+     * @param dataDir    O diretório onde as novas SSTables serão armazenadas.
      * @param sstMaxSize O tamanho máximo de cada SSTable.
-     * @param tables    As SSTables a serem combinadas.
+     * @param tables     As SSTables a serem combinadas.
      * @return Uma lista de SSTables ordenadas.
      */
     public static ObjectArrayList<SSTable> sortedRun(String dataDir, long sstMaxSize, SSTable... tables) {
@@ -145,8 +128,9 @@ public class SSTable implements Iterable<ByteArrayPair> {
      * @return O valor associado à chave, ou null se a chave não for encontrada.
      */
     public byte[] get(byte[] key) {
-        if (ByteArrayComparator.compare(key, minKey) == -1 ||
-                ByteArrayComparator.compare(key, maxKey) == 1 ||
+        ByteArrayWrapper keyWrapper = new ByteArrayWrapper(key);
+        if (minKey.compareTo(keyWrapper) < 0 ||
+                maxKey.compareTo(keyWrapper) > 0 ||
                 !bloomFilter.mightContain(key))
             return null;
 
@@ -177,7 +161,7 @@ public class SSTable implements Iterable<ByteArrayPair> {
                 continue;
             }
 
-            // leu a chave completa, compara, se for igual, lê o valor
+            // lê a chave completa, compara, se for igual, lê o valor
             readValueLen = is.readVByteInt();
             readKey = is.readNBytes(readKeyLen);
             cmp = compare(key, readKey);
@@ -229,6 +213,19 @@ public class SSTable implements Iterable<ByteArrayPair> {
         return String.format("%s/sst_%d", directory, SST_COUNTER.incrementAndGet());
     }
 
+    /**
+     * Inicializa a SSTable carregando os seus metadados e estruturas auxiliares a partir do disco.
+     * Abre os arquivos associados à SSTable (.data, .index e .bloom) e reconstrói:
+     * - o fluxo de entrada para leitura dos dados
+     * - os offsets esparsos e tamanhos acumulados a partir do índice
+     * - as chaves associadas aos pontos de amostragem
+     * - o filtro de Bloom utilizado para consultas rápidas de existência de chave
+     * O arquivo .index armazena o número total de elementos, seguido pelas diferenças de offset e contagem
+     * relativas aos pontos de amostragem. Esses dados são reconstruídos somando cumulativamente os valores.
+     * Por fim, o filtro de Bloom é carregado do arquivo correspondente.
+     *
+     * @param filename caminho base dos arquivos da SSTable (sem extensão)
+     */
     private void initializeFromDisk(String filename) {
         // arquivo de itens
         is = new ExtendedInputStream(filename + DATA_FILE_EXTENSION);
@@ -283,15 +280,50 @@ public class SSTable implements Iterable<ByteArrayPair> {
         return low;
     }
 
-    private void writeItems(String filename, Iterator<ByteArrayPair> items, int sampleSize, long maxByteSize) {
-        ExtendedOutputStream ios = new ExtendedOutputStream(filename + DATA_FILE_EXTENSION);
+    private int compare(byte[] b1, byte[] b2) {
+        return new ByteArrayWrapper(b1).compareTo(new ByteArrayWrapper(b2));
+    }
 
+    /**
+     * Escreve os pares chave-valor no disco, gerando os arquivos .data, .bloom e .index.
+     * EPercorre os itens do iterador e grava os dados no arquivo .data enquanto mantém:
+     * - um filtro de Bloom com todas as chaves
+     * - amostras dos offsets e posições para formar um índice esparso
+     * A cada 'sampleSize' elementos, registra a chave, o offset e a contagem atual, que
+     * são utilizados na criação do arquivo .index.
+     * Após o término, também grava o filtro de Bloom no arquivo correspondente.
+     * Se o iterador estiver vazio, uma exceção é lançada para evitar a criação de uma SSTable inválida.
+     *
+     * @param filename    caminho base para os arquivos a serem criados (sem extensão)
+     * @param items       iterador dos pares chave-valor a serem gravados
+     * @param sampleSize  intervalo de amostragem para gerar o índice esparso
+     * @param maxByteSize limite máximo de bytes que podem ser escritos no arquivo .data
+     */
+    private void writeItems(String filename, Iterator<ByteArrayPair> items, int sampleSize, long maxByteSize) {
+        initializeIndexStructures();
+
+        int numElements = writeDataFile(filename, items, sampleSize, maxByteSize);
+
+        if (numElements == 0) {
+            throw new IllegalArgumentException("Tentativa de criar uma SSTable a partir de um iterador vazio");
+        }
+
+        this.size = numElements;
+
+        writeBloomFilter(filename);
+        writeIndexFile(filename, numElements);
+    }
+
+    private void initializeIndexStructures() {
         sparseOffsets = new LongArrayList();
         sparseSizeCount = new IntArrayList();
         sparseKeys = new ObjectArrayList<>();
         bloomFilter = new BloomFilter();
+    }
 
-        // escreve os itens e preenche os índices
+    private int writeDataFile(String filename, Iterator<ByteArrayPair> items, int sampleSize, long maxByteSize) {
+        ExtendedOutputStream ios = new ExtendedOutputStream(filename + DATA_FILE_EXTENSION);
+
         int numElements = 0;
         long offset = 0L;
         long byteSize = 0L;
@@ -300,9 +332,8 @@ public class SSTable implements Iterable<ByteArrayPair> {
             ByteArrayPair item = items.next();
 
             if (minKey == null)
-                minKey = item.key();
-
-            maxKey = item.key();
+                minKey = item.getKey();
+            maxKey = item.getKey();
 
             if (numElements % sampleSize == 0) {
                 sparseOffsets.add(offset);
@@ -313,29 +344,25 @@ public class SSTable implements Iterable<ByteArrayPair> {
             bloomFilter.add(item.key());
 
             offset += ios.writeByteArrayPair(item);
-            numElements++;
-
             byteSize += item.size();
+            numElements++;
         }
 
         ios.close();
+        return numElements;
+    }
 
-        if (numElements == 0) {
-            throw new IllegalArgumentException("Tentativa de criar uma SSTable a partir de um iterador vazio");
-        }
-
-        this.size = numElements;
-
-        // escreve o filtro de bloom e o índice no disco
+    private void writeBloomFilter(String filename) {
         bloomFilter.writeToFile(filename + BLOOM_FILE_EXTENSION);
+    }
 
+    private void writeIndexFile(String filename, int numElements) {
         ExtendedOutputStream indexOs = new ExtendedOutputStream(filename + INDEX_FILE_EXTENSION);
-        indexOs.writeVByteInt(numElements);
 
+        indexOs.writeVByteInt(numElements);
         int sparseSize = sparseOffsets.size();
         indexOs.writeVByteInt(sparseSize);
 
-        // ignora o primeiro offset, sempre 0
         long prevOffset = 0L;
         for (int i = 1; i < sparseSize; i++) {
             indexOs.writeVByteLong(sparseOffsets.getLong(i) - prevOffset);
