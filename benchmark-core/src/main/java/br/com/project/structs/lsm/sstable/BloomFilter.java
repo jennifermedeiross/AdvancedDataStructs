@@ -2,7 +2,10 @@ package br.com.project.structs.lsm.sstable;
 
 import br.com.project.structs.lsm.io.ExtendedInputStream;
 import br.com.project.structs.lsm.io.ExtendedOutputStream;
+import it.unimi.dsi.fastutil.longs.LongLongMutablePair;
+import it.unimi.dsi.fastutil.longs.LongLongPair;
 import lombok.Getter;
+import org.apache.commons.codec.digest.MurmurHash3;
 
 import static java.lang.Math.ceil;
 import static java.lang.Math.log;
@@ -15,7 +18,8 @@ import static java.lang.Math.log;
  */
 public class BloomFilter {
 
-    static final int DEFAULT_SIZE = 1 << 20; // 1MB
+    static final int DEFAULT_SIZE = 1 << 20;
+
     final int size;
     @Getter
     final int hashCount;
@@ -92,11 +96,12 @@ public class BloomFilter {
      * @param key A chave a ser adicionada.
      */
     public void add(byte[] key) {
-        long hash = key.hashCode();
+        LongLongPair hash = getHash(key);
+        long h1 = hash.leftLong(), h2 = hash.rightLong();
 
         for (int i = 0; i < hashCount; i++) {
-            int bit = (int) Math.abs((hash + i) % size);
-            bits[bit / 64] |= 1L << (bit % 64); // Modificando o bit correspondente
+            int bit = (int) Math.abs((h1 + i * h2) % size);
+            bits[bit / 64] |= 1L << (bit % 64);
         }
     }
 
@@ -107,15 +112,21 @@ public class BloomFilter {
      * @return Verdadeiro se o filtro pode conter a chave, falso caso contrário.
      */
     public boolean mightContain(byte[] key) {
-        long hash = key.hashCode();
+        LongLongPair hash = getHash(key);
+        long h1 = hash.leftLong(), h2 = hash.rightLong();
 
         for (int i = 0; i < hashCount; i++) {
-            int bit = (int) Math.abs((hash + i) % size);
+            int bit = (int) Math.abs((h1 + i * h2) % size);
             if ((bits[bit / 64] & (1L << (bit % 64))) == 0)
                 return false;
         }
 
         return true;
+    }
+
+    private LongLongMutablePair getHash(byte[] key) {
+        long[] hashes = MurmurHash3.hash128x64(key, 0, key.length, 0);
+        return LongLongMutablePair.of(hashes[0], hashes[1]);
     }
 
     /**
@@ -134,10 +145,6 @@ public class BloomFilter {
             os.writeLong(b);
 
         os.close();
-    }
-
-    public int size() {
-        return size;
     }
 
 }
