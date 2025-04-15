@@ -69,7 +69,7 @@ Para garantir o balanceamento, a árvore segue estas regras:
       
           ![4A.2](./assets/insercao/4A.2.png)
       
-          Passo 2: Rotação à esquerda no avô(10) e troca de corer entre pai(20) e avô(10) 
+          Passo 2: Rotação à esquerda no avô(10) e troca de cor entre pai(20) e avô(10) 
       
           ![4A.3](./assets/insercao/4A.2.png)  
 
