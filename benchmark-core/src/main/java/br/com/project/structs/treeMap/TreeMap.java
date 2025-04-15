@@ -19,26 +19,6 @@ public class TreeMap<K extends Comparable<K>, V> {
     private static final boolean BLACK = false;
 
     /**
-     * Classe interna que representa um no da árvore.
-     * Cada nó contém uma chave , um valor , referência para os filhos esquerdo e direito , e uma cor(vermelho ou preto).
-     */
-    private class Node {
-        K key;
-        V value;
-        Node left, right;
-        boolean color;
-
-        Node(K key, V value, boolean color) {
-            this.key = key;
-            this.value = value;
-            this.color = color;
-        }
-    }
-
-    private Node root;// raiz da árvore
-    private int size = 0; // Contador de elementos
-
-    /**
      *  Verifica se o nó é vermelho
      *  Um nó nulo é considerado preto.
      */
@@ -402,4 +382,26 @@ public class TreeMap<K extends Comparable<K>, V> {
             return node.key;
         }
     }
+
+
+    /**
+     * Classe interna que representa um no da árvore.
+     * Cada nó contém uma chave , um valor , referência para os filhos esquerdo e direito , e uma cor(vermelho ou preto).
+     */
+    private class Node {
+        K key;
+        V value;
+        Node left, right;
+        boolean color;
+
+        Node(K key, V value, boolean color) {
+            this.key = key;
+            this.value = value;
+            this.color = color;
+        }
+    }
+
+    private Node root;// raiz da árvore
+    private int size = 0; // Contador de elementos
+
 }
