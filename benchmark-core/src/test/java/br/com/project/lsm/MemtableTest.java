@@ -4,6 +4,7 @@ import br.com.project.entities.Pessoa;
 import br.com.project.structs.lsm.memtable.Memtable;
 import br.com.project.structs.lsm.serialization.ObjectSerializer;
 import br.com.project.structs.lsm.types.ByteArrayPair;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -13,10 +14,15 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MemtableTest {
+    private Memtable memtable;
+
+    @BeforeEach
+    void setup(){
+        memtable = new Memtable();
+    }
+
     @Test
     void testAddAndGet() throws IOException {
-        Memtable memtable = new Memtable();
-
         byte[] key = "chave1".getBytes();
         byte[] value = "valor1".getBytes();
         memtable.add(new ByteArrayPair(key, value));
@@ -29,16 +35,12 @@ public class MemtableTest {
 
     @Test
     void testGetNonExistingKey() {
-        Memtable memtable = new Memtable();
-
         byte[] result = memtable.get("inexistente".getBytes());
         assertNull(result);
     }
 
     @Test
     void testRemoveInsertsTombstone() throws IOException {
-        Memtable memtable = new Memtable();
-
         byte[] key = "teste".getBytes();
         byte[] value = "valor".getBytes();
         memtable.add(new ByteArrayPair(key, value));
@@ -56,8 +58,6 @@ public class MemtableTest {
 
     @Test
     void testByteSizeAfterInsertions() {
-        Memtable memtable = new Memtable();
-
         ByteArrayPair p1 = new ByteArrayPair("k1".getBytes(), "v1".getBytes());
         ByteArrayPair p2 = new ByteArrayPair("k2".getBytes(), "v2".getBytes());
         memtable.add(p1);
@@ -69,8 +69,6 @@ public class MemtableTest {
 
     @Test
     void testIteratorSkipsDuplicateKeys() {
-        Memtable memtable = new Memtable();
-
         byte[] key = "duplicado".getBytes();
         memtable.add(new ByteArrayPair(key, "valor1".getBytes()));
         memtable.add(new ByteArrayPair("outro".getBytes(), "x".getBytes()));
@@ -88,8 +86,6 @@ public class MemtableTest {
 
     @Test
     void testAddAndGetPessoa() throws Exception {
-        Memtable memtable = new Memtable();
-
         Pessoa pessoa = new Pessoa(
                 "Pedro Henrique Fernandes",
                 "250.341.876-71",
@@ -113,8 +109,6 @@ public class MemtableTest {
 
     @Test
     void testRemovePessoa() throws Exception {
-        Memtable memtable = new Memtable();
-
         Pessoa pessoa = new Pessoa(
                 "Maria Souza",
                 "123.456.789-00",
