@@ -51,37 +51,69 @@ public class LSMTree<K, V> {
      * Cria uma LSMTree com o tamanho de Memtable padrão e diretório de dados.
      */
     public LSMTree() {
-        this(DEFAULT_MEMTABLE_MAX_BYTE_SIZE, DEFAULT_LEVEL_ZERO_MAX_SIZE);
+        this(DEFAULT_MEMTABLE_MAX_BYTE_SIZE, DEFAULT_LEVEL_ZERO_MAX_SIZE, LEVEL_INCR_FACTOR);
     }
 
     /**
-     * Cria uma LSMTree com o tamanho de Memtable e diretório de dados definidos pelo usuário.
+     * Construtor auxiliar que define um diretório padrão para armazenar os dados da SSTable.
      *
      * @param mutableMemtableMaxByteSize O tamanho máximo da Memtable antes de ser descarregada para o disco.
      * @param maxLevelZeroSstNumber      O número máximo de SSTables no nível zero.
+     * @param levelGrowthFactor          Fator de crescimento para o tamanho dos níveis superiores.
      */
-    public LSMTree(long mutableMemtableMaxByteSize, int maxLevelZeroSstNumber) {
-        this(mutableMemtableMaxByteSize, maxLevelZeroSstNumber, LEVEL_INCR_FACTOR);
+    public LSMTree(long mutableMemtableMaxByteSize, int maxLevelZeroSstNumber, double levelGrowthFactor) {
+        this(Paths.get(System.getProperty("user.dir"),"benchmark-core", "src", "main", "java", "br", "com", "project", "structs", "lsm", "sstable", "data").toString(),
+                mutableMemtableMaxByteSize,
+                maxLevelZeroSstNumber,
+                levelGrowthFactor);
     }
 
-    public LSMTree(long mutableMemtableMaxByteSize, int maxLevelZeroSstNumber, double levelGrowthFactor) {
+    /**
+     * Construtor principal da LSMTree, que permite configurar o diretório de dados, o tamanho máximo da Memtable
+     * e os parâmetros de controle das SSTables.
+     *
+     * @param dataDir                    Caminho onde os arquivos da SSTable serão salvos.
+     * @param mutableMemtableMaxByteSize Tamanho máximo da Memtable (em bytes) antes de ser "flushada" para disco.
+     * @param maxLevelZeroSstNumber     Número máximo de SSTables permitidas no nível zero antes de disparar uma compactação.
+     * @param levelGrowthFactor         Fator de crescimento para calcular o tamanho dos níveis seguintes da LSMTree.
+     */
+    public LSMTree(String dataDir, long mutableMemtableMaxByteSize, int maxLevelZeroSstNumber, double levelGrowthFactor) {
+        this(dataDir, mutableMemtableMaxByteSize, maxLevelZeroSstNumber, levelGrowthFactor, 50, 200);
+    }
+
+
+    /**
+     * Construtor da LSMTree que permite configurar os delays do flush e da compactação.
+     *
+     * @param dataDir                    Caminho onde os arquivos da SSTable serão salvos.
+     * @param mutableMemtableMaxByteSize Tamanho máximo da Memtable (em bytes) antes de ser "flushada" para disco.
+     * @param maxLevelZeroSstNumber     Número máximo de SSTables permitidas no nível zero antes de disparar uma compactação.
+     * @param levelGrowthFactor         Fator de crescimento para calcular o tamanho dos níveis seguintes da LSMTree.
+     * @param flushDelayMillis          Intervalo (em milissegundos) entre execuções do flush da Memtable.
+     * @param compactionDelayMillis     Intervalo (em milissegundos) entre execuções da compactação de níveis.
+     */
+    public LSMTree(String dataDir,
+                   long mutableMemtableMaxByteSize,
+                   int maxLevelZeroSstNumber,
+                   double levelGrowthFactor,
+                   long flushDelayMillis,
+                   long compactionDelayMillis) {
+
         this.mutableMemtableMaxSize = mutableMemtableMaxByteSize;
         this.maxLevelZeroSstNumber = maxLevelZeroSstNumber;
         this.maxLevelZeroSstByteSize = mutableMemtableMaxByteSize * 2;
         this.levelIncrFactor = levelGrowthFactor;
-        this.dataDir = Paths.get(System.getProperty("user.dir"),
-                "benchmark-core", "src", "main", "java", "br", "com", "project", "structs", "lsm", "sstable", "data"
-        ).toString();
+        this.dataDir = dataDir;
 
         createDataDir();
         initMemtables();
         initLevels();
 
         memtableFlusher = newSingleThreadScheduledExecutor();
-        memtableFlusher.scheduleAtFixedRate(this::flushMemtable, 50, 50, TimeUnit.MILLISECONDS);
+        memtableFlusher.scheduleAtFixedRate(this::flushMemtable, flushDelayMillis, flushDelayMillis, TimeUnit.MILLISECONDS);
 
         tableCompactor = newSingleThreadScheduledExecutor();
-        tableCompactor.scheduleAtFixedRate(this::levelCompaction, 200, 200, TimeUnit.MILLISECONDS);
+        tableCompactor.scheduleAtFixedRate(this::levelCompaction, compactionDelayMillis, compactionDelayMillis, TimeUnit.MILLISECONDS);
     }
 
     private void initMemtables() {
