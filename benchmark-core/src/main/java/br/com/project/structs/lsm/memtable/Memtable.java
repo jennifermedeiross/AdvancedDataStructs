@@ -76,4 +76,9 @@ public class Memtable implements Iterable<ByteArrayPair> {
     public Iterator<ByteArrayPair> iterator() {
         return new UniqueSortedIterator<>(tree.iterator());
     }
+
+    public void clear() {
+        tree.clear();
+        byteSize = 0L;
+    }
 }
