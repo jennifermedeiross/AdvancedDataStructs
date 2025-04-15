@@ -420,6 +420,14 @@ public class AVLTree<K extends Comparable<K>, V extends Comparable<V>> implement
         inOrderTraversal(node.right, result);
     }
 
+    /**
+     * Limpa todos os elementos da árvore AVL.
+     */
+    public void clear() {
+        root = null;
+        size = 0;
+    }
+
     public static class Node<V> {
         V value;
         Node<V> left, right, parent;

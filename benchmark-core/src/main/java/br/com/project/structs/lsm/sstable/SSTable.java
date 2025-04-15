@@ -129,9 +129,9 @@ public class SSTable implements Iterable<ByteArrayPair> {
      */
     public byte[] get(byte[] key) {
         ByteArrayWrapper keyWrapper = new ByteArrayWrapper(key);
-        if (minKey.compareTo(keyWrapper) < 0 ||
-                maxKey.compareTo(keyWrapper) > 0 ||
-                !bloomFilter.mightContain(key))
+
+        // verifica se a chave está fora do intervalo conhecido ou se com certeza não está presente (via Bloom Filter)
+        if (keyWrapper.compareTo(minKey) < 0 || keyWrapper.compareTo(maxKey) > 0 || !bloomFilter.mightContain(key))
             return null;
 
         int offsetIndex = getCandidateOffsetIndex(key);
