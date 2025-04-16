@@ -83,11 +83,9 @@ Exemplo: Se inserirmos vários dados seguidos para a direita, a árvore pode "pe
 Como a árvore se mantém balanceada, a remoção continua eficiente: custo log(n).
 
 Se quiser aprofundar um pouco mais sobre isso, recomendo a leitura do material [Ávores Balanceadas](https://joaoarthurbm.github.io/eda/posts/avl/) do professor João Arthur Brunet de
-Computação @ UFCG 
+Computação @ UFCG
 
 ---
-
-#### Recaptulando:
 
 A Memtable é a primeira parada dos dados em sistemas baseados em LSM-Trees. Ela armazena as informações na memória de forma organizada, facilitando tanto inserções quanto buscas. Mesmo sendo uma estrutura temporária, seu papel é essencial: manter os dados ordenados desde o início, o que é importante para garantir um bom desempenho nas próximas etapas.
 
@@ -141,6 +139,14 @@ Exemplo (conteúdo .bloom):
 ````
 Usado para dizer "essa chave talvez esteja na SSTable" sem acessar o disco inteiro.
 
+Meio confuso? Vai uma analogia então:
+
+Imagine que temos um clube com vários seguranças na porta. Cada segurança representa uma função hash. Quando uma pessoa (um CPF) tenta entrar, todos os seguranças olham para ela e anotam o número do crachá dela em uma folha diferente (isso é o equivalente a marcar bits no vetor).
+
+Depois, se alguém quiser saber: "essa pessoa já entrou no clube?", a gente pergunta para todos os seguranças.
+- Se todos disserem que sim, então provavelmente ela já entrou (mas pode ser um engano – falso positivo).
+- Se algum deles disser que não, então com certeza ela nunca entrou.
+
 ---
 >O **índice esparso** guarda apenas algumas entradas da tabela (não todas), economizando espaço, e servindo como atalhos para busca.
 
@@ -161,9 +167,13 @@ Exemplo (conteúdo .index):
 204.756.938-92   → offset 4096   → posição 3000 da lista
 ```
 
----
+Difícil?
 
-Mais a diante, discutiremos o fluxo completo. A priori, o objetivo é entendermos o que é cada um desses componentes da **LSMTree**.
+Imagine que você tem um grande livro com milhares de páginas, e quer encontrar rapidamente um assunto específico sem ter que ler página por página. Em vez de ter um índice completo de todos os tópicos, você só tem uma lista reduzida, como um índice com algumas palavras-chave importantes a cada 100 páginas.
+
+Quando você quer encontrar o tópico, vai até o índice, vê as palavras-chave e, em vez de começar do começo, salta direto para a seção do livro onde aquele tópico está, economizando tempo.
+
+No caso do índice esparso, você guarda apenas algumas "palavras-chave" (chaves) e suas localizações no livro (offset), permitindo uma busca mais rápida sem precisar verificar tudo.
 
 ---
 
@@ -171,7 +181,7 @@ Mais a diante, discutiremos o fluxo completo. A priori, o objetivo é entendermo
 
 #### Flush
 
-O **flush** acontece quando a estrutura em memória atinge sua capacidade máxima. Nesse ponto, os dados são transferidos para o disco de forma ordenada, liberando espaço na RAM para novas inserções. Essa transferência é eficiente justamente por aproveitar a ordenação prévia, permitindo gravações sequenciais rápidas.
+O **flush** acontece quando a `Memtable` atinge sua capacidade máxima. Nesse ponto, os dados são transferidos para o disco de forma ordenada, liberando espaço na RAM para novas inserções. Essa transferência é eficiente justamente por aproveitar a ordenação prévia, permitindo gravações sequenciais rápidas.
 Durante o flush, tombstones (valores especiais que indicam remoção lógica) também são persistidos. Eles não eliminam imediatamente os dados antigos, mas sinalizam que determinadas chaves devem ser ignoradas em leituras futuras.
 Com o tempo, múltiplos arquivos no disco vão se acumulando. Para evitar degradação no desempenho das buscas e liberar espaço ocupado por dados obsoletos ou removidos, entra em cena a compactação. Ela realiza a fusão desses arquivos, removendo duplicações, aplicando os tombstones e reorganizando os dados em um novo arquivo mais enxuto e eficiente.
 
@@ -186,16 +196,16 @@ Durante a compactação, os arquivos persistidos são lidos e mesclados em um no
 
 Esse processo reduz a fragmentação, melhora o desempenho de leitura e libera espaço em disco. Além disso, como a compactação pode ser feita em diferentes níveis (por exemplo, *minor* envolvendo poucos arquivos ou *major* envolvendo todos os arquivos de um nível), é possível balancear custo e benefício conforme a carga de trabalho do sistema.
 
+Analogamente:
+
+<img alt="Representação do processo de flush e compactação" height="100%" src="./assets/flush-compact.png" width="100%"/>
+
 #### Estratégia Baseada em Inspeção Temporizada para Flush e Compactação
 Na arquitetura da LSM-Tree, tanto o flush da Memtable quanto a compactação entre níveis são operações essenciais para manter a estrutura eficiente, organizada e rápida em operações de leitura e escrita.
 
 Embora seja possível realizar essas operações com base em limites de tamanho ou quantidade de dados (por exemplo, ao ultrapassar o número máximo de SSTables no nível 0 ou o tamanho total em bytes), optamos por uma estratégia baseada em inspeções periódicas(mantendo a estratégia de Francesco). Isso significa que o sistema verifica de tempos em tempos — em intervalos definidos — se é necessário realizar o flush ou iniciar uma nova compaction.
 
 Isso porque, ao realizar testes com cargas razoavelmente grandes (a partir de 10.000 registros), observamos que a estratégia baseada em verificação por tamanho apresentava um leve impacto negativo no tempo de execução. Embora essa diferença de desempenho não tenha sido drástica, a abordagem com inspeção temporizada se mostrou mais eficiente e estável para o nosso cenário. Ela permite que o sistema mantenha sua performance mesmo sob variações de carga, evitando pausas ou gargalos causados por verificações frequentes baseadas em tamanho ou quantidade de SSTables.
-
-Analogamente:
-
-<img alt="Representação do processo de flush e compactação" height="100%" src="./assets/flush-compact.png" width="100%"/>
 
 ---
 
@@ -204,6 +214,9 @@ Analogamente:
 Em posse do conhecimento desses conceitos, vamos abordar o funcionamento prático da nossa **LSM-Tree** com o exemplo.
 
 ---
+
+>Armazenar dados como arrays de bytes em vez de objetos completos na LSM-Tree é vantajoso. Primeiro, reduz o uso de espaço, pois elimina o overhead dos metadados dos objetos e permite uma compactação mais eficiente. Além disso, facilita o acesso direto e rápido aos dados, melhorando o desempenho em operações de leitura e escrita. Esse formato também garante maior flexibilidade e compatibilidade entre sistemas, já que os arrays de bytes são independentes de tipo e linguagem, permitindo um controle mais preciso sobre a serialização e deserialização dos dados. Em sistemas como a LSM-Tree, que lidam com grandes volumes de dados, essa abordagem otimiza o uso do disco e acelera as operações, tornando o armazenamento mais eficiente e a manipulação dos dados mais ágil.
+
 #### Inserção:
 Quando precisamos inserir um novo elemento, ele é adicionado primeiro à **Memtable**.
 
@@ -237,7 +250,7 @@ public void add(ByteArrayPair item) {
 }
 ```
 
-- Se a **Memtable** atual atinge o limite, então é hora de criar uma **Memtable imutável** e "esvaziar" a atual para dar espaço a novos elementos: 
+- Se a **Memtable** atual atinge o limite, então é hora de criar uma **Memtable imutável** e "esvaziar" a atual para dar espaço a novos elementos:
 
 ```java
     private void checkMemtableSize() {
@@ -326,6 +339,8 @@ private void levelCompaction() {
 }
 ```
 
+#### Resumidamente, podemos imaginar o seguinte:
+
 ![Fluxo de inserção](./assets/fluxo-insert.png)
 
 ---
@@ -338,8 +353,8 @@ A função get busca um valor na LSM-Tree com base em uma chave, seguindo a orde
 
 3. SSTables no disco – dados persistidos.
 
-- Se encontrar a chave, retorna o valor. 
-- Se o valor for um array vazio (length == 0), considera como "deletado" e retorna null. 
+- Se encontrar a chave, retorna o valor.
+- Se o valor for um array vazio (length == 0), considera como "deletado" e retorna null.
 - Se não encontrar em lugar nenhum, também retorna null.
 
 ```java
@@ -380,7 +395,64 @@ A função get busca um valor na LSM-Tree com base em uma chave, seguindo a orde
         return null;
     }
 ```
+- O `get` da Memtable e das Memtable imutáveis busca na árvore (AVL).
+```java
+[Memtable]
+public byte[] get(byte[] key) {
+  ByteArrayPair pair = tree.get(new ByteArrayWrapper(key));
+  return (pair != null) ? pair.value() : null;
+}
+```
 
+- Já o `get` das SSTables precisam buscar no disco:
+```java
+public byte[] get(byte[] key) {
+  ByteArrayWrapper keyWrapper = new ByteArrayWrapper(key);
+
+  // Ignora se a chave está fora do intervalo ou não é provável no Bloom Filter
+  if (keyWrapper.compareTo(minKey) < 0 || keyWrapper.compareTo(maxKey) > 0 || !bloomFilter.mightContain(key))
+    return null;
+
+  // Usa o índice esparso pra pular direto pro trecho provável
+  int offsetIndex = getCandidateOffsetIndex(key);
+  long offset = sparseOffsets.getLong(offsetIndex);
+  int remaining = size - sparseSizeCount.getInt(offsetIndex);
+  is.seek(offset);
+
+  int cmp = 1;
+  int searchKeyLen = key.length, readKeyLen, readValueLen;
+  byte[] readKey;
+
+  // Varre os registros a partir do ponto aproximado
+  while (cmp > 0 && remaining > 0) {
+    remaining--;
+    readKeyLen = is.readVByteInt();
+
+    // Se a chave lida for muito grande, já passou da chave buscada
+    if (readKeyLen > searchKeyLen) return null;
+
+    // Se for pequena demais, pula para o próximo
+    if (readKeyLen < searchKeyLen) {
+      readValueLen = is.readVByteInt();
+      is.skip(readKeyLen + readValueLen);
+      continue;
+    }
+
+    // Tamanhos batem — compara as chaves byte a byte
+    readValueLen = is.readVByteInt();
+    readKey = is.readNBytes(readKeyLen);
+    cmp = compare(key, readKey);
+
+    // Achou? Lê e retorna o valor. Senão, pula.
+    if (cmp == 0) return is.readNBytes(readValueLen);
+    else is.skip(readValueLen);
+  }
+
+  return null;
+}
+```
+
+Observe esse fluxo ilustrado de forma básica:
 ![Fluxo de busca](./assets/fluxo-search.png)
 ---
 #### Remoção
