@@ -491,6 +491,7 @@ Essa arquitetura permite reduzir acessos ao disco e melhorar o desempenho de ins
 
 Em essência, a LSM Tree equilibra bem desempenho, organização e uso eficiente do armazenamento, sendo ideal para aplicações que precisam lidar com grandes volumes de dados.
 
+
 ---
 ### Referências
 
