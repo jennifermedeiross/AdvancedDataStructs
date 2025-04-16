@@ -7,15 +7,15 @@ import br.com.project.structs.btree.BTree;
 import br.com.project.structs.lsm.tree.LSMTree;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-public class SearchController {
+public class SearchNonExistentController {
     private BenchmarkMetricsWriter writer;
     private LSMTree<String, Pessoa> lsmTree;
     private TreeMap<String, Pessoa> treeMap;
     private BTree bTree;
 
-    public SearchController(){
+    public SearchNonExistentController(){
         writer = new BenchmarkMetricsWriter("results");
-        writer.write("search.csv", "Estrutura", "Carga", "Operação", "Tempo (ms)", "Memória (KB)");
+        writer.write("searchnonexistent.csv", "Estrutura", "Carga", "Operação", "Tempo (ms)", "Memória (KB)");
     }
 
     private void warmUp(Pessoa[] pessoas, String estrutura) throws JsonProcessingException {
@@ -86,7 +86,7 @@ public class SearchController {
             }
         }
 
-        int repeticoes = 100;
+        int repeticoes = 10;
 
         for (int i = 0; i < pessoas.length; i++) {
             double somaTempo = 0;
@@ -98,13 +98,13 @@ public class SearchController {
 
                 switch (estrutura) {
                     case "LSMTree":
-                        lsmTree.get(pessoas[i].getCpf());
+                        lsmTree.get("-----------");
                         break;
                     case "BTree":
-                        bTree.search(pessoas[i].getCpf());
+                        bTree.search("-----------");
                         break;
                     case "TreeMap":
-                        treeMap.get(pessoas[i].getCpf());
+                        treeMap.get("-----------");
                         break;
                 }
 
@@ -132,15 +132,15 @@ public class SearchController {
         }
     }
 
-    public void searchLsm(Pessoa[] pessoas) throws JsonProcessingException {
+    public void searchNonExistenLsm(Pessoa[] pessoas) throws JsonProcessingException {
         benchmarkSearch(pessoas, "LSMTree");
     }
 
-    public void searchBTree(Pessoa[] pessoas) throws JsonProcessingException {
+    public void searchNonExisttenBTree(Pessoa[] pessoas) throws JsonProcessingException {
         benchmarkSearch(pessoas, "BTree");
     }
 
-    public void searchTreeMap(Pessoa[] pessoas) throws JsonProcessingException {
+    public void searchNonExisttenTreeMap(Pessoa[] pessoas) throws JsonProcessingException {
         benchmarkSearch(pessoas, "TreeMap");
     }
 }

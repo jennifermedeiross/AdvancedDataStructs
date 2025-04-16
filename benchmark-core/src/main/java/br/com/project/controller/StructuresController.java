@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class StructuresController {
+   private SearchNonExistentController searchNonExistentController;
+    private RemoveInexistenteController removeInexistenteController;
     private InsertController insertController;
     private SearchController searchController;
     private RemoveController removeController;
@@ -16,6 +18,8 @@ public class StructuresController {
     private Map<Integer, Pessoa[]> dadosMap;
 
     public StructuresController() {
+        searchNonExistentController = new SearchNonExistentController();
+        removeInexistenteController = new RemoveInexistenteController();
         insertController = new InsertController();
         searchController = new SearchController();
         removeController = new RemoveController();
@@ -25,9 +29,12 @@ public class StructuresController {
 
     public void initAnalysis() throws IOException {
         loadData(); // Carrega tudo antes
-        insertExecute();
-        searchExecute();
-        removeExecute();
+        // insertExecute();
+        // searchExecute();
+        // removeExecute();
+       // removeInexistenteExecute();
+        searchNonExistentExecute();
+        
     }
 
     private void loadData() throws IOException {
@@ -72,6 +79,31 @@ public class StructuresController {
                 removeController.removeTreeMap(pessoas);
                 removeController.removeBTree(pessoas);
             } catch (JsonProcessingException | InterruptedException e) {
+                System.err.println("Erro ao processar: " + e.getMessage());
+            }
+        }
+    }
+    private void removeInexistenteExecute() {
+        for (int qnt : quantidades) {
+            Pessoa[] pessoas = dadosMap.get(qnt);
+            System.out.println(pessoas.length);
+            try {
+                removeInexistenteController.removeLsm(pessoas);
+                removeInexistenteController.removeTreeMap(pessoas);
+                removeInexistenteController.removeBTree(pessoas);
+            } catch (JsonProcessingException | InterruptedException e) {
+                System.err.println("Erro ao processar: " + e.getMessage());
+            }
+        }
+    }
+    private void searchNonExistentExecute() {
+        for (int qnt : quantidades) {
+            Pessoa[] pessoas = dadosMap.get(qnt);
+            try {
+                searchNonExistentController.searchNonExistenLsm(pessoas);
+                searchNonExistentController.searchNonExisttenBTree(pessoas);
+                searchNonExistentController.searchNonExisttenTreeMap(pessoas);
+            } catch (JsonProcessingException e) {
                 System.err.println("Erro ao processar: " + e.getMessage());
             }
         }

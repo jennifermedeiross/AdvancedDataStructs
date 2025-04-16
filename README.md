@@ -61,10 +61,10 @@ No diretório /data-generator, execute:
 #### Linux/macOS:
 ```sh
 chmod +x generate.sh  
-./generate.sh
+./generaion-script.sh
 ```
 #### Windows:
 ```sh
-./generate.bat
+./generation-script.bat
 ```
 O script instalará as dependências e gerará os dados automaticamente.

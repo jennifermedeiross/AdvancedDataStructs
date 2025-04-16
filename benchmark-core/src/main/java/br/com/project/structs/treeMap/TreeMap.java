@@ -1,4 +1,4 @@
-package br.com.project.structs;
+package br.com.project.structs.treeMap;
 import java.util.*;
 import br.com.project.entities.Pessoa;
 

@@ -7,15 +7,15 @@ import br.com.project.structs.btree.BTree;
 import br.com.project.structs.lsm.tree.LSMTree;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-public class SearchController {
+public class RemoveInexistenteController {
     private BenchmarkMetricsWriter writer;
     private LSMTree<String, Pessoa> lsmTree;
     private TreeMap<String, Pessoa> treeMap;
     private BTree bTree;
 
-    public SearchController(){
+    public RemoveInexistenteController(){
         writer = new BenchmarkMetricsWriter("results");
-        writer.write("search.csv", "Estrutura", "Carga", "Operação", "Tempo (ms)", "Memória (KB)");
+        writer.write("removeinexistente.csv", "Estrutura", "Carga", "Operação", "Tempo (ms)", "Memória (KB)");
     }
 
     private void warmUp(Pessoa[] pessoas, String estrutura) throws JsonProcessingException {
@@ -55,11 +55,12 @@ public class SearchController {
         }
     }
 
-    private void benchmarkSearch(Pessoa[] pessoas, String estrutura) throws JsonProcessingException {
+    private void benchmarkDelete(Pessoa[] pessoas, String estrutura) throws JsonProcessingException, InterruptedException {
         warmUp(pessoas, estrutura);
 
         Runtime runtime = Runtime.getRuntime();
 
+        // Reinicializa as estruturas
         switch (estrutura) {
             case "LSMTree":
                 this.lsmTree = new LSMTree<>();
@@ -86,6 +87,8 @@ public class SearchController {
             }
         }
 
+        System.gc();
+        Thread.sleep(100);
         int repeticoes = 100;
 
         for (int i = 0; i < pessoas.length; i++) {
@@ -93,18 +96,31 @@ public class SearchController {
             double somaMemoria = 0;
 
             for (int j = 0; j < repeticoes; j++) {
+                // Reinsere a pessoa removida para repetir o teste
+                switch (estrutura) {
+                    case "LSMTree":
+                        lsmTree.add(pessoas[i].getCpf(), pessoas[i]);
+                        break;
+                    case "BTree":
+                        bTree.add(pessoas[i]);
+                        break;
+                    case "TreeMap":
+                        treeMap.put(pessoas[i].getCpf(), pessoas[i]);
+                        break;
+                }
+
                 long usedMemoryBefore = runtime.totalMemory() - runtime.freeMemory();
                 long startTime = System.nanoTime();
 
                 switch (estrutura) {
                     case "LSMTree":
-                        lsmTree.get(pessoas[i].getCpf());
+                        lsmTree.delete("-----------");
                         break;
                     case "BTree":
-                        bTree.search(pessoas[i].getCpf());
+                        bTree.delete("-----------");
                         break;
                     case "TreeMap":
-                        treeMap.get(pessoas[i].getCpf());
+                        treeMap.delete("-----------");
                         break;
                 }
 
@@ -122,25 +138,25 @@ public class SearchController {
             double mediaMemoria = somaMemoria / repeticoes;
 
             writer.append(
-                    "search.csv",
+                    "remove.csv",
                     estrutura,
-                    i+1,
-                    "busca",
+                    i + 1,
+                    "remocao",
                     String.format("%.3f", mediaTempo),
                     String.format("%.2f", mediaMemoria)
             );
         }
     }
 
-    public void searchLsm(Pessoa[] pessoas) throws JsonProcessingException {
-        benchmarkSearch(pessoas, "LSMTree");
+    public void removeLsm(Pessoa[] pessoas) throws JsonProcessingException, InterruptedException {
+        benchmarkDelete(pessoas, "LSMTree");
     }
 
-    public void searchBTree(Pessoa[] pessoas) throws JsonProcessingException {
-        benchmarkSearch(pessoas, "BTree");
+    public void removeBTree(Pessoa[] pessoas) throws JsonProcessingException, InterruptedException {
+        benchmarkDelete(pessoas, "BTree");
     }
 
-    public void searchTreeMap(Pessoa[] pessoas) throws JsonProcessingException {
-        benchmarkSearch(pessoas, "TreeMap");
+    public void removeTreeMap(Pessoa[] pessoas) throws JsonProcessingException, InterruptedException {
+        benchmarkDelete(pessoas, "TreeMap");
     }
 }
