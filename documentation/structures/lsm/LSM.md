@@ -84,6 +84,7 @@ Como a árvore se mantém balanceada, a remoção continua eficiente: custo log(
 
 Se quiser aprofundar um pouco mais sobre isso, recomendo a leitura do material [Ávores Balanceadas](https://joaoarthurbm.github.io/eda/posts/avl/) do professor João Arthur Brunet de
 Computação @ UFCG 
+
 ---
 
 A Memtable é a primeira parada dos dados em sistemas baseados em LSM-Trees. Ela armazena as informações na memória de forma organizada, facilitando tanto inserções quanto buscas. Mesmo sendo uma estrutura temporária, seu papel é essencial: manter os dados ordenados desde o início, o que é importante para garantir um bom desempenho nas próximas etapas.
