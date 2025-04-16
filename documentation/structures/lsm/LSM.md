@@ -87,6 +87,8 @@ Computação @ UFCG
 
 ---
 
+#### Recaptulando:
+
 A Memtable é a primeira parada dos dados em sistemas baseados em LSM-Trees. Ela armazena as informações na memória de forma organizada, facilitando tanto inserções quanto buscas. Mesmo sendo uma estrutura temporária, seu papel é essencial: manter os dados ordenados desde o início, o que é importante para garantir um bom desempenho nas próximas etapas.
 
 Quando a Memtable enche, ela é "despejada" no disco, virando uma SSTable — um arquivo imutável, otimizado para leitura e gravação sequencial. Como os dados já estão ordenados na memória, esse processo de gravação no disco se torna muito mais eficiente.
