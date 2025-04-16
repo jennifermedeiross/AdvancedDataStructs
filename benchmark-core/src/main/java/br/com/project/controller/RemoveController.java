@@ -89,7 +89,7 @@ public class RemoveController {
 
         System.gc();
         Thread.sleep(100);
-        int repeticoes = 100;
+        int repeticoes = 10;
 
         for (int i = 0; i < pessoas.length; i++) {
             double somaTempo = 0;

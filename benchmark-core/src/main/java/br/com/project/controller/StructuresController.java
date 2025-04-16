@@ -31,10 +31,12 @@ public class StructuresController {
     }
 
     private void loadData() throws IOException {
+        Pessoa[] pessoas = null;
         for (int qnt : quantidades) {
-            Pessoa[] pessoas = DataReader.readJson(Pessoa[].class, "dados-" + qnt + ".json");
+            pessoas = DataReader.readJson(Pessoa[].class, "dados-" + qnt + ".json");
             dadosMap.put(qnt, pessoas);
         }
+
     }
 
     private void insertExecute() {
@@ -66,7 +68,6 @@ public class StructuresController {
     private void removeExecute() {
         for (int qnt : quantidades) {
             Pessoa[] pessoas = dadosMap.get(qnt);
-            System.out.println(pessoas.length);
             try {
                 removeController.removeLsm(pessoas);
                 removeController.removeTreeMap(pessoas);
