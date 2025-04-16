@@ -237,7 +237,7 @@ public class TreeMap<K extends Comparable<K>, V> {
      */
     private Node moveRedLeft(Node h) {
         flipColors(h);
-        if (isRed(h.right.left)) {
+        if (h.right != null && isRed(h.right.left)) {
             h.right = rotateRight(h.right);
             h = rotateLeft(h);
             flipColors(h);
@@ -254,7 +254,7 @@ public class TreeMap<K extends Comparable<K>, V> {
      */
     private Node moveRedRight(Node h) {
         flipColors(h);
-        if (isRed(h.left.left)) {
+        if (h.left != null && isRed(h.left.left)) {
             h = rotateRight(h);
             flipColors(h);
         }
