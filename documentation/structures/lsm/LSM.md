@@ -30,7 +30,7 @@ Usamos [árvore binária de busca balanceadas(AVL)](https://github.com/jenniferm
 |:----------------------------------------------------------:|:---------------------------------------------------:|
 | Exemplo de AVL Perfeitamente Balanceada                   | Exemplo de AVL Balanceada                            |
 
-Para nosso exemplo, teremos uma entidade [Pessoa](https://github.com/jennifermedeiross/AdvancedDataStructs/blob/main/benchmark-core/src/main/java/br/com/project/entities/Pessoa.java) que representa de forma básica uma pessoa com nome, CPF, idade, telefone e data de nascimento. A AVLTree recebe um par <String, Pessoa>, em que a key é o CPF e o value é a instância do objeto Pessoa. Nesse caso, o Node armazena apenas o Value, pois a Function extrai a chave (CPF) a partir do valor armazenado (a instância de Pessoa).
+Por exemplo, dada uma entidade [Pessoa](https://github.com/jennifermedeiross/AdvancedDataStructs/blob/main/benchmark-core/src/main/java/br/com/project/entities/Pessoa.java) que representa de forma básica uma pessoa com nome, CPF, idade, telefone e data de nascimento. A AVLTree recebe um par <String, Pessoa>, em que a key é o CPF e o value é a instância do objeto Pessoa. Nesse caso, o Node armazena apenas o Value, pois a Function extrai a chave (CPF) a partir do valor armazenado (a instância de Pessoa).
 
 Ao inserirmos uma instância de Pessoa na árvore AVL, o CPF é extraído automaticamente por meio da keyExtractor, permitindo que a árvore posicione o nó corretamente sem que o Node precise armazenar a chave separadamente, garantindo que a árvore permaneça balanceada. Além disso, caso uma Pessoa com o mesmo CPF já exista, a árvore irá atualizar os dados dessa Pessoa, mantendo a integridade da estrutura de dados e a ordem de inserção. A busca e remoção também funcionam de maneira similar, utilizando o CPF como chave para localizar a instância da Pessoa correspondente.
 
@@ -41,6 +41,8 @@ Exemplo:
 AVLTree<String, Pessoa> avl = new AVLTree<>(Pessoa::getCpf);
 avl.add(new Pessoa(...));
 ```
+---
+Abordemos rapidamente como a AVL funciona:
 
 **Buscar na AVL é como procurar numa lista ordenada, mas muito mais rapidamente:**
 
@@ -62,6 +64,27 @@ Como a árvore está sempre equilibrada, a quantidade de passos será próxima d
 - Se estiver, aplicamos rotações para equilibrar.
 
 Exemplo: Se inserirmos vários dados seguidos para a direita, a árvore pode "pender" para um lado. A rotação corrige isso automaticamente.
+
+**E a remoção?**
+
+- Primeiro, buscamos o nó com a chave que queremos remover (como na busca normal).
+- Quando encontramos o nó, temos três situações possíveis:
+  - É uma folha (não tem filhos):
+    - Só removemos.
+  - Tem um filho só (esquerda ou direita):
+    - Substituímos o nó pelo seu filho.
+  - Tem dois filhos:
+    - Achamos o menor nó da subárvore direita (ou o maior da esquerda).
+    - Copiamos esse valor para o nó atual.
+    - Removemos o nó duplicado que copiamos (caso 1 ou 2).
+- Depois de remover, a árvore pode ficar desbalanceada.
+- Subimos recursivamente, ajustando os balanços e aplicando rotações se necessário.
+
+Como a árvore se mantém balanceada, a remoção continua eficiente: custo log(n).
+
+Se quiser aprofundar um pouco mais sobre isso, recomendo a leitura do material [Ávores Balanceadas](https://joaoarthurbm.github.io/eda/posts/avl/) do professor João Arthur Brunet de
+Computação @ UFCG 
+---
 
 A Memtable é a primeira parada dos dados em sistemas baseados em LSM-Trees. Ela armazena as informações na memória de forma organizada, facilitando tanto inserções quanto buscas. Mesmo sendo uma estrutura temporária, seu papel é essencial: manter os dados ordenados desde o início, o que é importante para garantir um bom desempenho nas próximas etapas.
 
