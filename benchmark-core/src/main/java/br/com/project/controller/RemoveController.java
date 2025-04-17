@@ -5,6 +5,9 @@ import br.com.project.service.BenchmarkMetricsWriter;
 import br.com.project.structs.treeMap.TreeMap;
 import br.com.project.structs.btree.BTree;
 import br.com.project.structs.lsm.tree.LSMTree;
+
+import java.util.Locale;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class RemoveController {
@@ -89,7 +92,7 @@ public class RemoveController {
 
         System.gc();
         Thread.sleep(100);
-        int repeticoes = 100;
+        int repeticoes = 30;
 
         for (int i = 0; i < pessoas.length; i++) {
             double somaTempo = 0;
@@ -140,10 +143,10 @@ public class RemoveController {
             writer.append(
                     "remove.csv",
                     estrutura,
-                    i + 1,
-                    "remocao",
-                    String.format("%.3f", mediaTempo),
-                    String.format("%.2f", mediaMemoria)
+                    pessoas.length,
+                    "remoção",
+                    String.format(Locale.US,"%.3f", mediaTempo),
+                    String.format(Locale.US,"%.2f", mediaMemoria)
             );
         }
     }

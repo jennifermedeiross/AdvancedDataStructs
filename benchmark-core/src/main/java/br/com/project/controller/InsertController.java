@@ -5,6 +5,9 @@ import br.com.project.service.BenchmarkMetricsWriter;
 import br.com.project.structs.treeMap.TreeMap;
 import br.com.project.structs.btree.BTree;
 import br.com.project.structs.lsm.tree.LSMTree;
+
+import java.util.Locale;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class InsertController {
@@ -96,10 +99,10 @@ public class InsertController {
             writer.append(
                     "insert.csv",
                     estrutura,
-                    i + 1,
-                    "inserção-" + (i + 1),
-                    String.format("%.3f", durationMs),
-                    String.format("%.2f", memoryKB)
+                    pessoas.length,
+                    "inserção",
+                    String.format(Locale.US,"%.3f", durationMs),
+                    String.format(Locale.US,"%.2f", memoryKB)
             );
         }
     }
