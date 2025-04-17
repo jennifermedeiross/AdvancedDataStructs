@@ -78,7 +78,7 @@ Sua inserção funciona das seguintes maneiras, quando um novo par chave-valor �
 Após a inserção, a árvore pode executar uma série de rotações e recoloração para manter as propriedades da árvore vermelho-preto, garantindo que ela permaneça balanceadas. Esse balanceamento automático é essencial para que todas as operações, tenham complexidade O(log n).
 
 ---
-**Remoção**
+### Remoção
 
 ![image](https://github.com/user-attachments/assets/16c4baab-db20-4dc9-a89b-763d20ce42b5)
 
@@ -99,7 +99,7 @@ Podemos reparar que para a treeMap o tempo de remoção cresce linearmente à me
 * Casos específicos de desbalanceamento: Após a remoção, a árvore pode entrar em um dos 6 casos de rebalanceamento (definidos no algoritmo de Cormen et al.), que envolvem rotações e ajustes de cores.
 
 ---
-**Busca**  
+## Busca
 
 ![image](https://github.com/user-attachments/assets/ceadd268-a625-4863-a406-bc19860428c1)
 
@@ -129,7 +129,7 @@ Apesar disso, cada operação de busca ainda percorre um caminho da raiz até um
 O TreeMap, no entanto, **oferece vantagens práticas em muitos cenários típicos de aplicações Java**, especialmente quando os dados residem inteiramente em memória e a ordenação natural das chaves é necessária. Seu tempo de busca é estável, mesmo com crescimento exponencial no número de elementos, como evidenciado pela curva suave e contínua no gráfico.
 
 ---
-### Conclusão da análise**
+### Conclusão da análise
 
 * **Então, qual é a melhor?**
 
