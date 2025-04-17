@@ -51,7 +51,7 @@ Isso significa que a altura cresce muito lentamente à medida que o número de c
 
 A operação de busca percorre a árvore da raiz até as folhas, buscando por uma chave específica. Em cada nó, a busca compara a chave desejada com as chaves armazenadas e decide qual filho seguir.
 
-- **Busca em um nó**: A busca em cada nó é realizada de forma linear (ou binária, para otimização).
+- **Busca em um nó**: A busca em cada nó é realizada de forma linear (ou binária, para otimização). Começamos com um **i** = 0 então compara-se o valor alvo com o valor de keys.get(i) ,se i < keys.size() e valor < keys.get(i) incrementa-se 1 ao i, se chegar ao final do array ou o número que estamos tentando achar for menor do que keys.get(i) deve-se seguir para children.get(i) e reiniciar o processo até chegar a uma folha. 
 - **Busca total**: A busca ocorre em tempo \( O(h) \), onde h é a altura da árvore. Como a altura é logarítmica, a busca é eficiente, mesmo para grandes volumes de dados.
 
 ### Inserção (B-TREE-INSERT)
@@ -87,6 +87,28 @@ Em um nó [10, 20, 30], se quisermos inserir a chave 25, a chave será colocada 
 
 | ![Inserção1](./assets/insercao1.png) | ➡️ | ![Inserção2](./assets/insercao2.png) |
 |:------------------------------:|:--:|:----------------------------:|
+```java
+private void insertNonFull(BTreeNode node, Pessoa pessoa) {
+        int i = node.keys.size() - 1;
+
+        if (node.isLeaf) {
+            node.keys.add(pessoa);
+            Collections.sort(node.keys, (p1, p2) -> p1.getCpf().compareTo(p2.getCpf()));
+        } else {
+            while (i >= 0 && pessoa.getCpf().compareTo(node.keys.get(i).getCpf()) < 0) {
+                i--;
+            }
+            i++;
+            if (node.children.get(i).keys.size() == (2 * t - 1)) {
+                splitChild(node, i, node.children.get(i));
+                if (pessoa.getCpf().compareTo(node.keys.get(i).getCpf()) > 0) {
+                    i++;
+                }
+            }
+            insertNonFull(node.children.get(i), pessoa);
+        }
+    }
+```
 
 
 ---
@@ -113,6 +135,23 @@ Se a chave 25 for inserida, o nó será dividido em dois nós:
 A chave mediana (25) será promovida para o nó pai. Se o nó pai também estiver cheio, o processo se repete até que a árvore seja ajustada.
 
 ![Inserção4](./assets/insercao4.png)
+```java
+  private void splitChild(BTreeNode parent, int i, BTreeNode child) {
+        BTreeNode newChild = new BTreeNode(child.isLeaf);
+        int mid = t - 1;
+        parent.keys.add(i, child.keys.get(mid));
+
+        newChild.keys.addAll(child.keys.subList(mid + 1, child.keys.size()));
+        child.keys.subList(mid, child.keys.size()).clear();
+
+        if (!child.isLeaf) {
+            newChild.children.addAll(child.children.subList(mid + 1, child.children.size()));
+            child.children.subList(mid + 1, child.children.size()).clear();
+        }
+
+        parent.children.add(i + 1, newChild);
+    }
+```
 
 ---
 
@@ -132,6 +171,11 @@ Este processo é simples e rápido, com complexidade de tempo \( O(h) \), onde \
 Se um nó folha contém as chaves `[10, 20, 30]` e a chave 20 deve ser removida, o nó se tornará `[10, 30]` após a remoção. Nenhuma reorganização dos nós é necessária.
 | ![IDelecao1](./assets/delecao1.png) | ➡️ | ![Delecao2](./assets/delecao2.png) |
 |:------------------------------:|:--:|:----------------------------:|
+```java
+if (idx < node.keys.size() && cpf.equals(node.keys.get(idx).getCpf())) {
+            if (node.isLeaf) {
+                node.keys.remove(idx);
+```
 
 
 
@@ -152,6 +196,52 @@ Temos os nós folhas `[10, 20, 30, 35]`, `[50 ,55]`, `[70, 100, 103]` e o nó pa
 Ao remover a chave 55 teremos nós folhas `[10, 20, 30]`, `[40, 50]`, `[70, 100, 103]` e o nó pai `[35, 60]`.
 
 ![Delecao6](./assets/delecao6.png)
+```java
+  private void fill(BTreeNode parent, int idx) {
+        if (idx > 0 && parent.children.get(idx - 1).keys.size() >= t) {
+            borrowFromPrev(parent, idx);
+        } else if (idx < parent.keys.size() && parent.children.get(idx + 1).keys.size() >= t) {
+            borrowFromNext(parent, idx);
+        } else {
+            if (idx < parent.keys.size()) {
+                merge(parent, idx);
+            } else {
+                merge(parent, idx - 1);
+            }
+        }
+    }
+
+ 
+ private void borrowFromPrev(BTreeNode parent, int idx) {
+        BTreeNode child = parent.children.get(idx);
+        BTreeNode sibling = parent.children.get(idx - 1);
+
+        child.keys.add(0, parent.keys.get(idx - 1));
+        parent.keys.set(idx - 1, sibling.keys.remove(sibling.keys.size() - 1));
+
+        if (!sibling.isLeaf) {
+            child.children.add(0, sibling.children.remove(sibling.children.size() - 1));
+        }
+    }
+
+    /**
+     * Pega uma chave do filho seguinte e move para o nó atual.
+     * 
+     * @param parent Nó pai.
+     * @param idx    Índice do filho atual.
+     */
+    private void borrowFromNext(BTreeNode parent, int idx) {
+        BTreeNode child = parent.children.get(idx);
+        BTreeNode sibling = parent.children.get(idx + 1);
+
+        child.keys.add(parent.keys.get(idx));
+        parent.keys.set(idx, sibling.keys.remove(0));
+
+        if (!sibling.isLeaf) {
+            child.children.add(sibling.children.remove(0));
+        }
+    }
+```
 
 
   
@@ -168,6 +258,19 @@ Ao remover a chave 5 o nó `[1, 2]` se une com a chave 4, a chave 3 do nó pai q
 ![Deleção7](./assets/delecao7.png)
 
 ![Deleção8](./assets/delecao8.png)
+
+```java
+ private void merge(BTreeNode parent, int idx) {
+        BTreeNode child = parent.children.get(idx);
+        BTreeNode sibling = parent.children.get(idx + 1);
+
+        child.keys.add(parent.keys.remove(idx));
+        child.keys.addAll(sibling.keys);
+        child.children.addAll(sibling.children);
+
+        parent.children.remove(idx + 1);
+    }
+```
 
 
 ---
