@@ -59,7 +59,7 @@ public class SSTableTest {
     }
 
     @Test
-    void testGet() throws IOException {
+    void testGet() {
         Pessoa pessoa = new Pessoa("Maria Souza", "123.456.789-00", 30, "+55 83 9 9999-9999", "10/10/1994");
         assertArrayEquals(pessoa.toString().getBytes(), sstable.get("123.456.789-00".getBytes()));
 

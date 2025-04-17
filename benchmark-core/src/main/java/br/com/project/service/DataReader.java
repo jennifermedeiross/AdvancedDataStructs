@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 /*
  * Classe que lê o arquivo de dados e mapeia o objeto
  */
-public class LeitorDeDados {
+public class DataReader {
 
     /**
      * Lê um arquivo JSON e converte o conteúdo em um objeto da classe T.

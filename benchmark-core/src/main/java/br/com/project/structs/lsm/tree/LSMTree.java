@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.concurrent.ScheduledExecutorService;
@@ -286,12 +287,24 @@ public class LSMTree<K, V> {
 
     /**
      * Cria o diretório onde os dados serão armazenados, caso não exista.
+     * Se existir, exclui.
      */
     private void createDataDir() {
         try {
-            Files.createDirectories(Paths.get(dataDir));
+            Path path = Paths.get(dataDir);
+            if (Files.exists(path)) {
+                Files.walk(path)
+                        .sorted((p1, p2) -> p2.compareTo(p1))
+                        .forEach(p -> {
+                            try {
+                                Files.delete(p);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        });
+            }
+            Files.createDirectories(path);
         } catch (IOException e) {
-            System.err.println("[ERRO] Falha ao criar diretório: " + e.getMessage());
             e.printStackTrace();
         }
     }
