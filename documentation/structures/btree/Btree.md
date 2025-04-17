@@ -51,7 +51,7 @@ Isso significa que a altura cresce muito lentamente à medida que o número de c
 
 A operação de busca percorre a árvore da raiz até as folhas, buscando por uma chave específica. Em cada nó, a busca compara a chave desejada com as chaves armazenadas e decide qual filho seguir.
 
-- **Busca em um nó**: A busca em cada nó é realizada de forma linear (ou binária, para otimização).
+- **Busca em um nó**: A busca em cada nó é realizada de forma linear (ou binária, para otimização). Começamos com um **i** = 0 então compara-se o valor alvo com o valor de keys.get(i) ,se i < keys.size() e valor < keys.get(i) incrementa-se 1 ao i, se chegar ao final do array ou o número que estamos tentando achar for menor do que keys.get(i) deve-se seguir para children.get(i) e reiniciar o processo até chegar a uma folha. 
 - **Busca total**: A busca ocorre em tempo \( O(h) \), onde h é a altura da árvore. Como a altura é logarítmica, a busca é eficiente, mesmo para grandes volumes de dados.
 
 ### Inserção (B-TREE-INSERT)
