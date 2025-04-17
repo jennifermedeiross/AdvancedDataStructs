@@ -1,163 +1,80 @@
 package br.com.project.controller;
 
 import br.com.project.entities.Pessoa;
-import br.com.project.structs.lsm.tree.LSMTree;
-import br.com.project.structs.btree.*;
-import br.com.project.structs.lsm.types.ByteArrayPair;
-import br.com.project.structs.TreeMap;
+import br.com.project.service.DataReader;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Random;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class StructuresController {
-    private LSMTree lsmTree;
-    private BTree bTree;
-    private TreeMap treeMap;
+    private InsertController insertController;
+    private SearchController searchController;
+    private RemoveController removeController;
+    private int[] quantidades;
+    private Map<Integer, Pessoa[]> dadosMap;
 
     public StructuresController() {
-        this.lsmTree = new LSMTree();
-        this.bTree = new BTree(1000);
-        this.treeMap = new TreeMap<String, Pessoa>();
+        insertController = new InsertController();
+        searchController = new SearchController();
+        removeController = new RemoveController();
+        quantidades = new int[]{1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 750000, 1000000, 1500000};
+        dadosMap = new HashMap<>();
     }
 
-    private String randomCpf(Pessoa[] pessoas) {
-        Random rand = new Random();
-        return pessoas[rand.nextInt(pessoas.length)].getCpf();
+    public void initAnalysis() throws IOException {
+        loadData(); // Carrega tudo antes
+        insertExecute();
+        searchExecute();
+        removeExecute();
     }
 
-    public void insereBtree(Pessoa[] pessoas) {
-        long startTime, endTime, duration;
-        for (Pessoa pessoa : pessoas) {
-
-            startTime = System.nanoTime();
-
-            bTree.add(pessoa);
-
-            endTime = System.nanoTime();
-            duration = endTime - startTime;
-
-            System.out.println("Btree " + (duration) + " " + pessoas.length);
-        }
-    }
-
-    public void buscaBtree(Pessoa[] pessoas) {
-        long startTime, endTime, duration;
-        for (Pessoa pessoa : pessoas) {
-
-            startTime = System.nanoTime();
-
-            bTree.search(randomCpf(pessoas));
-
-            endTime = System.nanoTime();
-            duration = endTime - startTime;
-
-            System.out.println("Btree " + (duration) + " " + pessoas.length);
-        }
-    }
-
-    public void removeBtree(Pessoa[] pessoas) {
-        long startTime, endTime, duration;
-        for (Pessoa pessoa : pessoas) {
-
-            startTime = System.nanoTime();
-
-            bTree.delete(randomCpf(pessoas));
-
-            endTime = System.nanoTime();
-            duration = endTime - startTime;
-
-            System.out.println("Btree " + (duration) + " " + pessoas.length);
-        }
-    }
-
-    public void insereLSM(Pessoa[] pessoas) {
-        long startTime, endTime, duration;
-        for (Pessoa pessoa : pessoas) {
-            byte[] cpfBytes = pessoa.getCpf().getBytes(StandardCharsets.UTF_8);
-            byte[] pessoaBytes = pessoa.toJson().getBytes(StandardCharsets.UTF_8);
-
-            startTime = System.nanoTime();
-
-            // lsmTree.add(new ByteArrayPair(cpfBytes, pessoaBytes));
-
-            endTime = System.nanoTime();
-            duration = endTime - startTime;
-
-            System.out.println("LSM " + (duration) + " " + pessoas.length);
-        }
-    }
-
-    public void removeLSM(Pessoa[] pessoas) {
-        long startTime, endTime, duration;
-        for (int i = 0; i < pessoas.length; i++) {
-            startTime = System.nanoTime();
-
-            // lsmTree.delete(randomCpf(pessoas).getBytes(StandardCharsets.UTF_8));
-
-            endTime = System.nanoTime();
-            duration = endTime - startTime;
-
-            System.out.println("LSM " + (duration) + " " + pessoas.length);
-        }
-    }
-
-    public void buscaLSM(Pessoa[] pessoas) {
-        long startTime, endTime, duration;
-
-        for (Pessoa pessoa : pessoas) {
-            startTime = System.nanoTime();
-
-            // lsmTree.get(pessoa.getCpf().getBytes(StandardCharsets.UTF_8));
-
-            endTime = System.nanoTime();
-            duration = endTime - startTime;
-
-            System.out.println("LSM " + (duration) + " " + pessoas.length);
-        }
-    }
-
-    public void insereTreeMap(Pessoa[] pessoas){
-        long startTime, endTime, duration;
-        for (Pessoa pessoa : pessoas) {
-
-            startTime = System.nanoTime();
-
-            treeMap.put(pessoa.getCpf(),pessoa);
-            endTime = System.nanoTime();
-            duration = endTime - startTime;
-
-            System.out.println("TreeMap " + (duration) + " " + pessoas.length);
-
+    private void loadData() throws IOException {
+        Pessoa[] pessoas = null;
+        for (int qnt : quantidades) {
+            pessoas = DataReader.readJson(Pessoa[].class, "dados-" + qnt + ".json");
+            dadosMap.put(qnt, pessoas);
         }
 
     }
 
-    public void buscaTreeMap(Pessoa[] pessoas){
-        long startTime, endTime, duration;
-        for (Pessoa pessoa : pessoas) {
-
-            startTime = System.nanoTime();
-            treeMap.get(randomCpf(pessoas));
-
-            endTime = System.nanoTime();
-            duration = endTime - startTime;
-
-            System.out.println("TreeMap " + (duration) + " " + pessoas.length);
-
-         }
+    private void insertExecute() {
+        for (int qnt : quantidades) {
+            Pessoa[] pessoas = dadosMap.get(qnt);
+            try {
+                insertController.insertLsm(pessoas);
+                insertController.insertTreeMap(pessoas);
+                insertController.insertBTree(pessoas);
+            } catch (JsonProcessingException e) {
+                System.err.println("Erro ao processar: " + e.getMessage());
+            }
+        }
     }
 
-    public void removeTreeMap(Pessoa[] pessoas) {
-        long startTime, endTime, duration;
-        for (Pessoa pessoa : pessoas) {
+    private void searchExecute() {
+        for (int qnt : quantidades) {
+            Pessoa[] pessoas = dadosMap.get(qnt);
+            try {
+                searchController.searchLsm(pessoas);
+                searchController.searchTreeMap(pessoas);
+                searchController.searchBTree(pessoas);
+            } catch (JsonProcessingException e) {
+                System.err.println("Erro ao processar: " + e.getMessage());
+            }
+        }
+    }
 
-            startTime = System.nanoTime();
-            treeMap.delete(randomCpf(pessoas));
-
-            endTime = System.nanoTime();
-            duration = endTime - startTime;
-
-            System.out.println("TreeMap " + (duration) + " " + pessoas.length);
+    private void removeExecute() {
+        for (int qnt : quantidades) {
+            Pessoa[] pessoas = dadosMap.get(qnt);
+            try {
+                removeController.removeLsm(pessoas);
+                removeController.removeTreeMap(pessoas);
+                removeController.removeBTree(pessoas);
+            } catch (JsonProcessingException | InterruptedException e) {
+                System.err.println("Erro ao processar: " + e.getMessage());
+            }
         }
     }
 }
