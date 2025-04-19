@@ -3,31 +3,37 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
 
+def gerar_grafico(nome_csv: str, operacao: str, pasta_dados: Path):
+    caminho_csv = pasta_dados / nome_csv
+    df = pd.read_csv(caminho_csv)
+    df['Carga'] = df['Carga'].astype(str)
+
+    sns.set(style="whitegrid")
+    plt.figure(figsize=(10, 6))
+    sns.lineplot(data=df, x='Carga', y='Tempo (ms)', hue='Estrutura', marker='o')
+    plt.title(f'Desempenho por Estrutura de Dados - {operacao}')
+    plt.xlabel('Carga de Dados')
+    plt.ylabel('Tempo (ms)')
+    plt.legend(title='Estrutura')
+    plt.tight_layout()
+
+    nome_imagem = pasta_dados / f"grafico_{caminho_csv.stem}.png"
+    plt.savefig(nome_imagem, dpi=300)
+    plt.close()
+    print(f"Gráfico salvo em: {nome_imagem}")
+
+# Configuração dos caminhos
 root_path = Path(__file__).resolve().parent.parent
 data_dir = root_path / "results"
-
 data_dir.mkdir(parents=True, exist_ok=True)
 
-csv_name = "insert.csv"
-csv_path = data_dir / csv_name
+# Lista de operações
+operacoes = [
+    ("insert.csv", "Inserção"),
+    ("remove.csv", "Remoção"),
+    ("search.csv", "Busca")
+]
 
-df = pd.read_csv(csv_path)
-df['Carga'] = df['Carga'].astype(str)
-
-operation = "Inserção"
-
-sns.set(style="whitegrid")
-plt.figure(figsize=(10, 6))
-sns.lineplot(data=df, x='Carga', y='Tempo (ms)', hue='Estrutura', marker='o')
-plt.title(f'Desempenho por Estrutura de Dados - {operation}')
-plt.xlabel('Carga de Dados')
-plt.ylabel('Tempo (ms)')
-plt.legend(title='Estrutura')
-plt.tight_layout()
-
-output_image = data_dir / f"grafico_{csv_path.stem}.png"
-
-plt.savefig(output_image, dpi=300)
-plt.close()
-
-print(f"Gráfico salvo em: {output_image}")
+# Gerar gráficos para todas as operações
+for nome_csv, operacao in operacoes:
+    gerar_grafico(nome_csv, operacao, data_dir)
