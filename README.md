@@ -82,7 +82,7 @@ A manipulação das estruturas e execução dos testes foram feitas por meio de 
 ---
 ### Inserção
 
-![Inserção gráfico](https://github.com/user-attachments/assets/5fb05ebc-abc0-47f9-ab78-d2ed02f62513)
+![insert](https://github.com/user-attachments/assets/4c7e9ece-ff1c-4ad9-a1ce-aa06db5a0b74)
 
 #### Btree
 
