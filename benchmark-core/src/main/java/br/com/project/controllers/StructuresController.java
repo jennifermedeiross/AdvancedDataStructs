@@ -1,4 +1,4 @@
-package br.com.project.controller;
+package br.com.project.controllers;
 
 import br.com.project.entities.Pessoa;
 import br.com.project.service.DataReader;
@@ -47,7 +47,6 @@ public class StructuresController {
                 insertController.insertLsm(pessoas);
                 insertController.insertTreeMap(pessoas);
                 insertController.insertBTree(pessoas);
-                System.out.println("[INSERÇÃO CONCLUÍDA]: " + qnt + " registros");
             } catch (JsonProcessingException e) {
                 System.err.println("[ERRO INSERÇÃO]: " + qnt + " registros - " + e.getMessage());
             }
@@ -62,7 +61,6 @@ public class StructuresController {
                 searchController.searchLsm(pessoas);
                 searchController.searchTreeMap(pessoas);
                 searchController.searchBTree(pessoas);
-                System.out.println("[BUSCA CONCLUÍDA]: " + qnt + " registros");
             } catch (JsonProcessingException e) {
                 System.err.println("[ERRO BUSCA]: " + qnt + " registros - " + e.getMessage());
             }
@@ -77,7 +75,6 @@ public class StructuresController {
                 removeController.removeLsm(pessoas);
                 removeController.removeTreeMap(pessoas);
                 removeController.removeBTree(pessoas);
-                System.out.println("[REMOÇÃO CONCLUÍDA]: " + qnt + " registros");
             } catch (JsonProcessingException | InterruptedException e) {
                 System.err.println("[ERRO REMOÇÃO]: " + qnt + " registros - " + e.getMessage());
             }

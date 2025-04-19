@@ -1,6 +1,6 @@
 package br.com.project;
 
-import br.com.project.controller.StructuresController;
+import br.com.project.controllers.StructuresController;
 
 import java.io.*;
 

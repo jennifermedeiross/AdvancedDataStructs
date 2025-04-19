@@ -1,6 +1,6 @@
 package br.com.project.treeMap;
 
-import br.com.project.structs.TreeMap;
+import br.com.project.structs.treeMap.TreeMap;
 import br.com.project.entities.Pessoa;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
