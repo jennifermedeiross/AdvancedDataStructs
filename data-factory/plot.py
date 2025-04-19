@@ -1,72 +1,33 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 from pathlib import Path
-from matplotlib.ticker import ScalarFormatter
 
-def ler_csv_e_gerar_grafico(caminho_arquivo):
-    df = pd.read_csv(caminho_arquivo)
+root_path = Path(__file__).resolve().parent.parent
+data_dir = root_path / "results"
 
-    colunas_necessarias = ["Estrutura", "Carga", "Operação", "Tempo (ms)", "Memória"]
-    if not all(col in df.columns for col in colunas_necessarias):
-        print("O CSV não contém todas as colunas necessárias:", colunas_necessarias)
-        return
+data_dir.mkdir(parents=True, exist_ok=True)
 
-    estruturas = df["Estrutura"].unique()
-    operacoes = df["Operação"].unique()
+csv_name = "remove.csv"
+csv_path = data_dir / csv_name
 
-    # Agrupa por Estrutura, Carga, Operação e tira a média
-    df_media = df.groupby(["Estrutura", "Carga", "Operação"]).mean(numeric_only=True).reset_index()
+df = pd.read_csv(csv_path)
+df['Carga'] = df['Carga'].astype(str)
 
-    pasta_resultados = Path("/home/oscar-rodrigues/Faculdade/AdvancedDataStructs/results")
-    pasta_resultados.mkdir(parents=True, exist_ok=True)
+operation = "remoção"
 
-    for operacao in operacoes:
-        # Gráfico de Tempo
-        plt.figure(figsize=(10, 6))
-        for estrutura in estruturas:
-            subset = df_media[(df_media["Estrutura"] == estrutura) & (df_media["Operação"] == operacao)]
-            subset = subset.sort_values(by="Carga")
+sns.set(style="whitegrid")
+plt.figure(figsize=(10, 6))
+sns.lineplot(data=df, x='Carga', y='Tempo (ms)', hue='Estrutura', marker='o')
+plt.title(f'Desempenho por Estrutura de Dados - {operation}')
+plt.xlabel('Carga de Dados')
+plt.ylabel('Tempo (ms)')
+plt.legend(title='Estrutura')
+plt.tight_layout()
 
-            plt.plot(
-                subset["Carga"],
-                subset["Tempo (ms)"],
-                marker='o',
-                label=estrutura
-            )
+output_image = data_dir / f"grafico_{csv_path.stem}.png"
 
-        plt.title(f"Tempo Médio de Execução - Operação: {operacao}")
-        plt.xlabel("Carga (Quantidade de registros)")
-        plt.ylabel("Tempo Médio (ms)")
-        plt.xticks(subset["Carga"], rotation=45)
-        plt.legend(title="Estrutura")
-        plt.grid(True)
-        plt.tight_layout()
-        plt.savefig(pasta_resultados / f"grafico_tempo_medio_{operacao}.png")
-        plt.close()
+plt.savefig(output_image, dpi=300)
+plt.close()
 
-        # Gráfico de Memória
-        plt.figure(figsize=(10, 6))
-        for estrutura in estruturas:
-            subset = df_media[(df_media["Estrutura"] == estrutura) & (df_media["Operação"] == operacao)]
-            subset = subset.sort_values(by="Carga")
-
-            plt.plot(
-                subset["Carga"],
-                subset["Memória"],
-                marker='o',
-                label=estrutura
-            )
-
-        plt.title(f"Uso Médio de Memória - Operação: {operacao}")
-        plt.xlabel("Carga (Quantidade de registros)")
-        plt.ylabel("Memória Média (KB)")
-        plt.xticks(subset["Carga"], rotation=0)
-        plt.legend(title="Estrutura")
-        plt.grid(True)
-        plt.tight_layout()
-        plt.savefig(pasta_resultados / f"grafico_memoria_medio_{operacao}.png")
-        plt.close()
-
-# Caminho do CSV
-caminho_arquivo = "/home/oscar-rodrigues/Faculdade/AdvancedDataStructs/results/search.csv"
-ler_csv_e_gerar_grafico(caminho_arquivo)
+print(f"Gráfico salvo em: {output_image}")
