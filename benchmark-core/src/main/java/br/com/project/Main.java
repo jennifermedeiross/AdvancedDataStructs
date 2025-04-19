@@ -8,7 +8,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         StructuresController sc = new StructuresController();
         sc.initAnalysis();
-        System.out.println("acabou");
+        System.out.println("Métricas geradas com sucesso!");
     }
 
 }

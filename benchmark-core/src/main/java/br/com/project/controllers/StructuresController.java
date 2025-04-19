@@ -19,7 +19,7 @@ public class StructuresController {
         insertController = new InsertController();
         searchController = new SearchController();
         removeController = new RemoveController();
-        quantidades = new int[]{1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 750000, 1000000, 1500000};
+        quantidades = new int[]{1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 750000, 1000000};
         dadosMap = new HashMap<>();
     }
 
@@ -43,11 +43,13 @@ public class StructuresController {
         for (int qnt : quantidades) {
             Pessoa[] pessoas = dadosMap.get(qnt);
             try {
+                System.out.println("[INSERÇÃO]: " + qnt + " registros");
                 insertController.insertLsm(pessoas);
                 insertController.insertTreeMap(pessoas);
                 insertController.insertBTree(pessoas);
+                System.out.println("[INSERÇÃO CONCLUÍDA]: " + qnt + " registros");
             } catch (JsonProcessingException e) {
-                System.err.println("Erro ao processar: " + e.getMessage());
+                System.err.println("[ERRO INSERÇÃO]: " + qnt + " registros - " + e.getMessage());
             }
         }
     }
@@ -56,11 +58,13 @@ public class StructuresController {
         for (int qnt : quantidades) {
             Pessoa[] pessoas = dadosMap.get(qnt);
             try {
+                System.out.println("[BUSCA]: " + qnt + " registros");
                 searchController.searchLsm(pessoas);
                 searchController.searchTreeMap(pessoas);
                 searchController.searchBTree(pessoas);
+                System.out.println("[BUSCA CONCLUÍDA]: " + qnt + " registros");
             } catch (JsonProcessingException e) {
-                System.err.println("Erro ao processar: " + e.getMessage());
+                System.err.println("[ERRO BUSCA]: " + qnt + " registros - " + e.getMessage());
             }
         }
     }
@@ -69,11 +73,13 @@ public class StructuresController {
         for (int qnt : quantidades) {
             Pessoa[] pessoas = dadosMap.get(qnt);
             try {
+                System.out.println("[REMOÇÃO]: " + qnt + " registros");
                 removeController.removeLsm(pessoas);
                 removeController.removeTreeMap(pessoas);
                 removeController.removeBTree(pessoas);
+                System.out.println("[REMOÇÃO CONCLUÍDA]: " + qnt + " registros");
             } catch (JsonProcessingException | InterruptedException e) {
-                System.err.println("Erro ao processar: " + e.getMessage());
+                System.err.println("[ERRO REMOÇÃO]: " + qnt + " registros - " + e.getMessage());
             }
         }
     }

@@ -55,6 +55,6 @@ def salvar_dados(quantidade=1000):
     with arquivo.open("w", encoding="utf-8") as f:
         json.dump(dados, f, indent=4, ensure_ascii=False)
 
-quantidade = [1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 750000,1000000,1500000]
+quantidade = [1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 750000,1000000]
 for i in range(len(quantidade)):
    salvar_dados(quantidade[i])
