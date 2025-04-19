@@ -8,13 +8,13 @@ data_dir = root_path / "results"
 
 data_dir.mkdir(parents=True, exist_ok=True)
 
-csv_name = "search.csv"
+csv_name = "insert.csv"
 csv_path = data_dir / csv_name
 
 df = pd.read_csv(csv_path)
 df['Carga'] = df['Carga'].astype(str)
 
-operation = "busca"
+operation = "Inserção"
 
 sns.set(style="whitegrid")
 plt.figure(figsize=(10, 6))
