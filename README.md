@@ -203,6 +203,28 @@ Na raiz do projeto:
 ./gradlew run
 ```
 Isso vai gerar 3 arquivos com os tempos obtidos em cada operação.
+>🚨 Atenção: Esse processo pode levar bastante tempo.
+> Quando for finalizado, a mensagem "`Métricas geradas com sucesso!`" aparecerá no terminal.
+
+#### Como mudar a quantidade de arquivos gerados?
+  
+  Basta alterar o array de quantidades no gerador e no controlador.
+  - Em [data_generator](https://github.com/jennifermedeiross/AdvancedDataStructs/blob/main/data-factory/data_generator.py):
+	```python
+	quantidade = [1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 750000,1000000]
+	for i in range(len(quantidade)):
+	 salvar_dados(quantidade[i])
+	```
+  - Em [StructuresController](https://github.com/jennifermedeiross/AdvancedDataStructs/blob/main/benchmark-core/src/main/java/br/com/project/controllers/StructuresController.java):
+  	```java
+	public StructuresController() {
+		insertController = new InsertController();
+		searchController = new SearchController();
+		removeController = new RemoveController();
+		quantidades = new int[]{1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 750000, 1000000};
+		dadosMap = new HashMap<>();
+	}
+   	```
 
 ### 3. Plotar os Gráficos
 Volte para o diretório data-factory:
