@@ -1,6 +1,6 @@
 # AdvancedDataStructs
 
-# Sumário
+## Índices
 
 1. [Introdução](#introdução)
    - Visão geral do projeto.
