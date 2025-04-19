@@ -2,9 +2,12 @@ package br.com.project.controller;
 
 import br.com.project.entities.Pessoa;
 import br.com.project.service.BenchmarkMetricsWriter;
-import br.com.project.structs.TreeMap;
+import br.com.project.structs.treeMap.TreeMap;
 import br.com.project.structs.btree.BTree;
 import br.com.project.structs.lsm.tree.LSMTree;
+
+import java.util.Locale;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class SearchController {
@@ -124,10 +127,10 @@ public class SearchController {
             writer.append(
                     "search.csv",
                     estrutura,
-                    i+1,
+                    pessoas.length,
                     "busca",
-                    String.format("%.3f", mediaTempo),
-                    String.format("%.2f", mediaMemoria)
+                    String.format(Locale.US,"%.3f", mediaTempo),
+                    String.format(Locale.US,"%.2f", mediaMemoria)
             );
         }
     }
