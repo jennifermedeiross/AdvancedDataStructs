@@ -245,6 +245,13 @@ Volte para o diretório data-factory:
 
 Este projeto foi desenvolvido por estudantes do curso de Ciência da Computação da Universidade Federal de Campina Grande (UFCG):
 
-- [Artur Lima](https://github.com/ArturALW)
-- [Jennifer Medeiros](https://github.com/jennifermedeiross)
-- [Oscar Rodrigues](https://github.com/OscarRodrigues-83)
+<a href="https://github.com/ArturALW">
+  <img src="https://github.com/ArturALW.png" width="150">
+</a>
+<a href="https://github.com/jennifermedeiross">
+  <img src="https://github.com/jennifermedeiross.png" width="150">
+</a>
+<a href="https://github.com/OscarRodrigues-83">
+  <img src="https://github.com/OscarRodrigues-83.png" width="150">
+</a>
+
